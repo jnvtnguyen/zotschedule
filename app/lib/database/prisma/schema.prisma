@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-kysely"
+  output    = "../"
+  fileName  = "generated-types.ts"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+model Department {
+  code  String @id
+  title String
+
+  courses Course[]
+
+  @@map("departments")
+}
+
+model Course {
+  id             String  @id
+  number         String
+  title          String
+  description    String
+  repeatability  String?
+  gradingOption  String?
+  concurrentWith String[]
+  sameAs         String[]
+  restriction    String?
+  overlapsWith   String[]
+  corequisite    String?
+  school         String?
+  /// @kyselyType(ColumnType<[number, number], string, string>)
+  units          Json
+  ges            String[]
+  terms          String[]
+
+  department        Department @relation(fields: [departmentCode], references: [code])
+  departmentCode    String
+  /// @kyselyType(ColumnType<import('@/lib/uci/prerequisites/types').PrerequisiteTree, string, string>)
+  prerequisiteTree  Json
+
+  @@map("courses")
+}
