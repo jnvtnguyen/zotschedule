@@ -7,14 +7,15 @@ import {
 } from "@tanstack/react-router";
 import { Body, Head, Html, Meta, Scripts } from "@tanstack/start";
 import { QueryClient } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import nprogress from "nprogress";
 import "nprogress/nprogress.css";
 
 // @ts-ignore
 import css from "../globals.css?url";
+import { validateSession } from "@/lib/auth";
+import { Toaster } from "@/lib/components/ui/toaster";
 import { NotFound } from "@/lib/components/errors/not-found";
-import { Navbar } from "@/lib/components/navbar";
+import { Navbar } from "@/lib/components/common/navbar";
 
 nprogress.configure({ showSpinner: false });
 
@@ -33,10 +34,17 @@ export const Route = createRootRouteWithContext<{
   links: () => [{ rel: "stylesheet", href: css }],
   component: RootComponent,
   notFoundComponent: NotFound,
+  beforeLoad: async () => {
+    const session = await validateSession();
+    return {
+      session,
+    };
+  },
 });
 
 function RootComponent() {
   const router = useRouter();
+  const { session } = Route.useRouteContext();
   router.subscribe(
     "onBeforeLoad",
     ({ pathChanged }) => pathChanged && nprogress.start(),
@@ -45,8 +53,11 @@ function RootComponent() {
 
   return (
     <RootDocument>
-      <Navbar />
-      <Outlet />
+      <div className="h-full w-full flex flex-col">
+        <Navbar user={session.user} />
+        <Outlet />
+      </div>
+      <Toaster />
     </RootDocument>
   );
 }
@@ -59,8 +70,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </Head>
       <Body>
         {children}
-        <ScrollRestoration />
         <Scripts />
+        <ScrollRestoration getKey={(location) => location.pathname} />
       </Body>
     </Html>
   );

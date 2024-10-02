@@ -1,6 +1,6 @@
 import { Column } from "@tanstack/react-table";
 
-import { useDepartments } from "@/lib/hooks/departments";
+import { useDepartments } from "@/lib/hooks/use-departments";
 import { FacetedFilter } from "./faceted-filter";
 
 type DepartmentsFilterProps<TData, TValue> = {

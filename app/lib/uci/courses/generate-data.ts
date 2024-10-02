@@ -7,13 +7,13 @@ const main = async () => {
     await database
       .insertInto("departments")
       .values(departments)
-      .onConflict((c) => c.doNothing())
+      .onConflict((b) => b.doNothing())
       .execute();
     for (const course of courses) {
       await database
         .insertInto("courses")
         .values(course)
-        .onConflict((c) => c.doNothing())
+        .onConflict((b) => b.doNothing())
         .execute();
     }
   } catch (error) {

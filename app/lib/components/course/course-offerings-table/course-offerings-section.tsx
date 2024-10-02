@@ -3,7 +3,7 @@ import { TableCell, TableRow } from "@/lib/components/ui/table";
 import { CourseOfferingsSectionStatus } from "./course-offerings-section-status";
 import { CourseOfferingsSectionRestrictions } from "./course-offerings-section-restrictions";
 import { CourseOfferingsSectionEnrollment } from "./course-offerings-section-enrollment";
-import { CourseOfferingsSectionActions } from "./course-offerings-section-actions";
+import { CourseOfferingsSectionInstructors } from "./course-offerings-section-instructors";
 
 type CourseOfferingsSectionProps = {
   section: WebSocSection;
@@ -14,12 +14,11 @@ export function CourseOfferingsSection({
 }: CourseOfferingsSectionProps) {
   return (
     <TableRow>
-      <TableCell width="1">
-        <CourseOfferingsSectionActions section={section} />
-      </TableCell>
       <TableCell>{section.code}</TableCell>
       <TableCell>{section.type}</TableCell>
-      <TableCell>{section.instructors.join(", ")}</TableCell>
+      <TableCell>
+        <CourseOfferingsSectionInstructors instructors={section.instructors} />
+      </TableCell>
       <TableCell>
         {section.meetings.map((meeting) => (
           <div key={meeting.days}>

@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { getOfferings } from "@/lib/uci/offerings";
 import { Course } from "@/lib/database/types";
-import { parseLetteredTerm } from "@/lib/utils";
+import { parseLetteredTerm } from "@/lib/uci/offerings";
 import { WebSocResponse } from "@/lib/uci/offerings/types";
 
 export const courseOfferingsFiltersSchema = z.object({

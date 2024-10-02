@@ -5,7 +5,7 @@ import {
   courseOfferingsFiltersSchema,
   getCourseOfferingsQuery,
   useCourseOfferings,
-} from "@/lib/hooks/course/offerings";
+} from "@/lib/hooks/use-course-offerings";
 import { CourseOfferingsTable } from "@/lib/components/course/course-offerings-table";
 
 export const Route = createFileRoute("/courses/$courseId/offerings")({

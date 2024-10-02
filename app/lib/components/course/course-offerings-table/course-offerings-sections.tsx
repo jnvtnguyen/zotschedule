@@ -20,7 +20,6 @@ export function CourseOfferingsSections({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead></TableHead>
             <TableHead>Code</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Instructors</TableHead>

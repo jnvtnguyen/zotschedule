@@ -1,7 +1,8 @@
 generator client {
-  provider = "prisma-kysely"
+  provider  = "prisma-kysely"
   output    = "../"
   fileName  = "generated-types.ts"
+  camelCase = true
 }
 
 datasource db {
@@ -20,27 +21,95 @@ model Department {
 }
 
 model Course {
-  id             String  @id
-  number         String
-  title          String
-  description    String
-  repeatability  String?
-  gradingOption  String?
-  concurrentWith String[]
-  sameAs         String[]
-  restriction    String?
-  overlapsWith   String[]
-  corequisite    String?
-  school         String?
+  id                String     @id
+  number            String
+  title             String
+  description       String
+  repeatability     String?
+  concurrent_with   String[]
+  grading_option    String?
+  same_as           String[]
+  restriction       String?
+  overlaps_with     String[]
+  corequisite       String?
+  school            String?
   /// @kyselyType(ColumnType<[number, number], string, string>)
-  units          Json
-  ges            String[]
-  terms          String[]
-
-  department        Department @relation(fields: [departmentCode], references: [code])
-  departmentCode    String
+  units             Json
+  ges               String[]
+  terms             String[]
+  department        Department @relation(fields: [department_code], references: [code])
+  department_code   String
   /// @kyselyType(ColumnType<import('@/lib/uci/prerequisites/types').PrerequisiteTree, string, string>)
-  prerequisiteTree  Json
+  prerequisite_tree Json
+
+  schedule_events ScheduleEvent[]
 
   @@map("courses")
+}
+
+model TermCalendar {
+  term                          String   @id
+  schedule_of_classes_available DateTime
+  instruction_begins            DateTime
+  instruction_ends              DateTime
+  finals_begin                  DateTime
+  finals_end                    DateTime
+
+  @@map("term_calendars")
+}
+
+model User {
+  id         String        @id @default(dbgenerated("gen_random_uuid()"))
+  name       String
+  email      String        @unique
+  password   String
+  created_at DateTime      @default(now())
+  updated_at DateTime      @updatedAt
+  sessions   UserSession[]
+  schedules  Schedule[]
+
+  @@map("users")
+}
+
+model UserSession {
+  id String @id @default(uuid())
+
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [id])
+  expires_at DateTime
+
+  @@map("user_sessions")
+}
+
+model Schedule {
+  id         String  @id @default(dbgenerated("gen_random_uuid()"))
+  name       String
+  is_default Boolean
+
+  user_id String
+  user    User   @relation(fields: [user_id], references: [id])
+
+  events ScheduleEvent[]
+
+  @@map("schedules")
+}
+
+model ScheduleEvent {
+  id String @id @default(dbgenerated("gen_random_uuid()"))
+
+  schedule_id String
+  schedule    Schedule @relation(fields: [schedule_id], references: [id])
+  course_id   String
+  course      Course   @relation(fields: [course_id], references: [id])
+
+  @@map("schedule_events")
+}
+
+model SearchAlias {
+  id String @id @default(dbgenerated("gen_random_uuid()"))
+
+  alias String
+  value String
+
+  @@map("search_aliases")
 }

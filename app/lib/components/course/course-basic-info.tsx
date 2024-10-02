@@ -1,5 +1,5 @@
 import { Course } from "@/lib/database/types";
-import { getUnitsFromRange } from "@/lib/utils";
+import { getUnitsFromRange } from "@/lib/uci/courses";
 
 type CourseBasicInfoProps = {
   course: Course;

@@ -1,0 +1,51 @@
+.rbc-time-view {
+  border: 1px solid hsl(var(--border)) !important;
+  border-left: none !important;
+}
+
+.rbc-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px !important;
+  border-bottom: none !important;
+  border-left: 1px solid hsl(var(--border)) !important;
+}
+
+.rbc-month-header > .rbc-header {
+  border-bottom: 1px solid hsl(var(--border)) !important;
+}
+
+.rbc-header:first-child {
+  border-left: none !important;
+}
+
+.rbc-timeslot-group {
+  border-left: none !important;
+  border-bottom: 1px solid hsl(var(--border)) !important;
+}
+
+.rbc-time-content {
+  border-top: 1px solid hsl(var(--border)) !important;
+}
+
+.rbc-time-slot {
+  border-top: none !important;
+}
+
+.rbc-time-header-gutter.rbc-label {
+  padding: 0px !important;
+  width: 65px !important;
+}
+
+.rbc-allday-cell {
+  display: none !important;
+}
+
+.rbc-time-content > * + * > * {
+  border-left: 1px solid hsl(var(--border)) !important;
+}
+
+.rbc-date-cell {
+  font-size: 0.84rem !important;
+}

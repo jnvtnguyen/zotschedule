@@ -17,7 +17,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/lib/components/ui/popover";
-import { cn, parseLetteredTerm } from "@/lib/utils";
+import { parseLetteredTerm } from "@/lib/uci/offerings";
+import { cn } from "@/lib/utils/style";
 import { ScrollArea } from "@/lib/components/ui/scroll-area";
 
 type CourseOfferingsTermFilterProps = {

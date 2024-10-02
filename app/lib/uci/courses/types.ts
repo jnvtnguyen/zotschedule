@@ -40,3 +40,24 @@ export const TERM_LETTER_DICTIONARY: Record<string, Quarter> = {
   M: "Summer10wk",
   Z: "Summer2",
 };
+
+export type OramaCombinedDocument =
+  | {
+      type: "department";
+      code: string;
+      title: string;
+    }
+  | {
+      type: "course";
+      id: string;
+      title: string;
+      description: string;
+      number: string;
+      school: string;
+      units: string;
+      ges: string;
+      department: {
+        code: string;
+        title: string;
+      };
+    };

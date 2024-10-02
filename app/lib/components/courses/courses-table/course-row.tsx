@@ -1,7 +1,7 @@
 import { Course } from "@/lib/database/types";
 import { Link } from "@tanstack/react-router";
 
-import { getUnitsFromRange } from "@/lib/utils";
+import { getUnitsFromRange } from "@/lib/uci/courses";
 
 type CourseRowProps = {
   course: Course;

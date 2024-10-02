@@ -11,8 +11,8 @@ export type Course = {
   title: string;
   description: string;
   repeatability: string | null;
-  gradingOption: string | null;
   concurrentWith: string[];
+  gradingOption: string | null;
   sameAs: string[];
   restriction: string | null;
   overlapsWith: string[];
@@ -38,7 +38,50 @@ export type Department = {
   code: string;
   title: string;
 };
+export type Schedule = {
+  id: Generated<string>;
+  name: string;
+  isDefault: boolean;
+  userId: string;
+};
+export type ScheduleEvent = {
+  id: Generated<string>;
+  scheduleId: string;
+  courseId: string;
+};
+export type SearchAlias = {
+  id: Generated<string>;
+  alias: string;
+  value: string;
+};
+export type TermCalendar = {
+  term: string;
+  scheduleOfClassesAvailable: Timestamp;
+  instructionBegins: Timestamp;
+  instructionEnds: Timestamp;
+  finalsBegin: Timestamp;
+  finalsEnd: Timestamp;
+};
+export type User = {
+  id: Generated<string>;
+  name: string;
+  email: string;
+  password: string;
+  createdAt: Generated<Timestamp>;
+  updatedAt: Timestamp;
+};
+export type UserSession = {
+  id: Generated<string>;
+  userId: string;
+  expiresAt: Timestamp;
+};
 export type DB = {
   courses: Course;
   departments: Department;
+  scheduleEvents: ScheduleEvent;
+  schedules: Schedule;
+  searchAliases: SearchAlias;
+  termCalendars: TermCalendar;
+  userSessions: UserSession;
+  users: User;
 };

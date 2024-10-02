@@ -10,7 +10,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 
 import { Course } from "@/lib/database/types";
-import { CourseFiltersSchema } from "@/lib/hooks/courses";
+import { CourseFiltersSchema } from "@/lib/hooks/use-courses";
 import { CourseList } from "./course-list";
 import { CourseFilters } from "./filters";
 import { CoursePagination } from "./filters/course-pagination";
@@ -42,7 +42,9 @@ const columns: ColumnDef<Course>[] = [
     id: "units",
     accessorFn: (row) => row.units,
     filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
+      return value.some((v: number) =>
+        (row.getValue(id) as number[]).includes(v),
+      );
     },
   },
   {
@@ -71,19 +73,26 @@ const getFiltersFromSearch = (
   });
 };
 
-const getColumnFilterById = (filters: ColumnFiltersState, id: string) => {
-  return filters.find((filter) => filter.id === id);
-};
-
-const getSearchFromilters = (
+const getSearchFromFilters = (
   filters: ColumnFiltersState,
 ): CourseFiltersSchema => {
-  return {
-    search: getColumnFilterById(filters, "search")?.value as string,
-    department: getColumnFilterById(filters, "department")?.value as string[],
-    breadth: getColumnFilterById(filters, "breadth")?.value as string[],
-    units: getColumnFilterById(filters, "units")?.value as number[],
-  };
+  const search = filters.reduce((acc, filter) => {
+    if (filter.id === "search") {
+      acc.search = filter.value as string;
+    }
+    if (filter.id === "department") {
+      acc.department = filter.value as string[];
+    }
+    if (filter.id === "ges") {
+      acc.ges = filter.value as string[];
+    }
+    if (filter.id === "units") {
+      acc.units = filter.value as number[];
+    }
+    return acc;
+  }, {} as CourseFiltersSchema);
+
+  return search;
 };
 
 export function CoursesTable({
@@ -109,9 +118,8 @@ export function CoursesTable({
   });
 
   const handleFiltersChange = useCallback(
-    (columnFilters: ColumnFiltersState) => {
-      const filters = getSearchFromilters(columnFilters);
-      onFiltersChange(filters);
+    (newFilters: ColumnFiltersState) => {
+      onFiltersChange(getSearchFromFilters(newFilters));
     },
     [onFiltersChange],
   );

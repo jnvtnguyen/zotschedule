@@ -17,7 +17,7 @@ export function CourseFilters({ table }: CourseFiltersProps) {
   const isFiltered = table.getState().columnFilters.length > 0;
 
   return (
-    <div className="flex sticky top-[-1px] bg-white py-5 border-b items-start flex-col gap-4">
+    <div className="flex sticky top-[-1px] bg-background py-5 border-b items-start flex-col gap-4">
       <div className="flex flex-row flex-wrap gap-2">
         {table.getColumn("search") && (
           <CourseSearchFilter

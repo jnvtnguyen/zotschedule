@@ -1,5 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 import { createServerFn } from "@tanstack/start";
+import { parseHTML } from "linkedom";
 
 import {
   Division,
@@ -8,6 +9,7 @@ import {
   WebSocOptions,
   WebSocResponse,
 } from "./types";
+import { TERM_LETTER_DICTIONARY } from "@/lib/uci/courses/types";
 
 const getCodedTerm = (term: Term): string => {
   switch (term.quarter) {
@@ -52,7 +54,7 @@ export const getOfferings = createServerFn(
     term,
     options,
   }: {
-    term: Term;
+    term: Term | string;
     options: WebSocOptions;
   }): Promise<WebSocResponse> => {
     const {
@@ -77,7 +79,7 @@ export const getOfferings = createServerFn(
 
     const params = new URLSearchParams({
       Submit: "Display XML Results",
-      YearTerm: getCodedTerm(term),
+      YearTerm: typeof term === "string" ? term : getCodedTerm(term),
       ShowComments: "on",
       ShowFinals: "on",
       Breadth: ge,
@@ -112,6 +114,14 @@ export const getOfferings = createServerFn(
         ignoreAttributes: false,
         parseAttributeValue: true,
       }).parse(await response.text());
+      if (
+        !parsed["websoc_results"] ||
+        !parsed["websoc_results"]["course_list"]
+      ) {
+        return {
+          schools: [],
+        };
+      }
       const result = {
         schools: getArrayFromObject(
           parsed["websoc_results"]["course_list"]["school"],
@@ -125,8 +135,19 @@ export const getOfferings = createServerFn(
                   code: department["@dept_code"],
                   name: department["@dept_name"],
                   comment: department["department_comment"],
-                  courses: getArrayFromObject(department["course"]).map(
-                    (course) => {
+                  courses: getArrayFromObject(department["course"])
+                    .filter((course) => {
+                      if (
+                        courseNumber &&
+                        !courseNumber
+                          .split(",")
+                          .includes(String(course["@course_number"]))
+                      ) {
+                        return false;
+                      }
+                      return true;
+                    })
+                    .map((course) => {
                       return {
                         comment: course["course_comment"],
                         number: course["@course_number"],
@@ -181,8 +202,7 @@ export const getOfferings = createServerFn(
                           },
                         ),
                       };
-                    },
-                  ),
+                    }),
                 };
               },
             ),
@@ -195,3 +215,32 @@ export const getOfferings = createServerFn(
     }
   },
 );
+
+export const getOfferingTermOptions = createServerFn("GET", async () => {
+  try {
+    const response = await fetch(WEBSOC_URL, {
+      method: "GET",
+    });
+
+    const { document } = parseHTML(await response.text());
+    const terms = document.querySelectorAll("select[name='YearTerm'] option");
+    return Array.from(terms)
+      .map((term) => ({
+        value: term.getAttribute("value")!,
+        label: term.textContent!,
+      }))
+      .filter(
+        (term) => !term.label.includes("COM") && !term.label.includes("Law"),
+      );
+  } catch (error) {
+    throw error;
+  }
+});
+
+export function parseLetteredTerm(term: string): Term {
+  const year = parseInt(term.slice(1));
+  return {
+    quarter: TERM_LETTER_DICTIONARY[term[0]],
+    year: `${(year >= 65 ? 1900 : 2000) + year}`,
+  };
+}

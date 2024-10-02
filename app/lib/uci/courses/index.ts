@@ -10,6 +10,9 @@ import {
   GE_REGEXP,
 } from "./types";
 
+const sleep = async (duration: number) =>
+  new Promise((resolve) => setTimeout(resolve, duration));
+
 const getCourseUnitsFromText = (text: string): [number, number] => {
   if (text.includes("-")) {
     return text.split("-").map((unit) => parseInt(unit)) as [number, number];
@@ -306,6 +309,7 @@ export const getCourseTerms = async (
       ptr += 6;
       params.set("action", "Prev");
       params.set("ptr", ptr.toString());
+      await sleep(1000);
     } while (pageCourseTerms);
   } catch (error) {
     throw error;
@@ -350,3 +354,11 @@ const getCourseTermsFromPage = async (
   }
   return entryFound;
 };
+
+export function getUnitsFromRange(units: [number, number]): string {
+  if (units[0] === units[1]) {
+    return `${units[0]}`;
+  }
+
+  return `${units[0]}-${units[1]}`;
+}

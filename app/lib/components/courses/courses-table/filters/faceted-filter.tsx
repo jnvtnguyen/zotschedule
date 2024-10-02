@@ -18,7 +18,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/lib/components/ui/command";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/style";
 import { ScrollArea } from "@/lib/components/ui/scroll-area";
 
 type FacetedFilterProps<TData, TValue> = {

@@ -1,6 +1,6 @@
 "use server";
 
-import { Kysely, PostgresDialect } from "kysely";
+import { CamelCasePlugin, Kysely, PostgresDialect } from "kysely";
 import dotenv from "dotenv";
 import pg from "pg";
 
@@ -15,4 +15,5 @@ export const database = new Kysely<DB>({
   dialect: new PostgresDialect({
     pool,
   }),
+  plugins: [new CamelCasePlugin()],
 });

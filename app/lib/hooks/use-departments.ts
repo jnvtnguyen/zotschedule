@@ -1,3 +1,4 @@
+import { FetchQueryOptions, useQuery } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/start";
 
 import { Department } from "@/lib/database/types";
@@ -18,3 +19,13 @@ export const getDepartments = createServerFn(
     }
   },
 );
+
+export const getDepartmentsQuery: FetchQueryOptions<Department[]> = {
+  queryKey: ["departments"],
+  queryFn: async () => await getDepartments(),
+};
+
+export const useDepartments = () => {
+  const query = useQuery(getDepartmentsQuery);
+  return query;
+};

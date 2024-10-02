@@ -198,3 +198,8 @@ export type WebSocSchool = {
 export type WebSocResponse = {
   schools: WebSocSchool[];
 };
+
+export type OfferingTermOption = {
+  value: string;
+  label: string;
+};

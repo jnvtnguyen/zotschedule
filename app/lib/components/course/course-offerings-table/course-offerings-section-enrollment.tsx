@@ -7,11 +7,14 @@ type CourseOfferingsSectionEnrollmentProps = {
 export function CourseOfferingsSectionEnrollment({
   enrollment,
 }: CourseOfferingsSectionEnrollmentProps) {
-  const waitlist = enrollment.waitlist === "n/a" ? "N/A" : enrollment.waitlist;
+  const waitlist =
+    enrollment.waitlist === "n/a"
+      ? "N/A"
+      : `${enrollment.waitlist} / ${enrollment.waitlistCapacity}`;
 
   return (
     <div>
-      <p className="font-bold">
+      <p className="font-semibold">
         {enrollment.current} / {enrollment.max}
       </p>
       <p>WL: {waitlist}</p>

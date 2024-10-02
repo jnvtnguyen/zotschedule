@@ -2,12 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
 
 import { CoursesTable } from "@/lib/components/courses/courses-table";
-import { getDepartmentsQuery } from "@/lib/hooks/departments";
+import { getDepartmentsQuery } from "@/lib/hooks/use-departments";
 import {
   courseFiltersSchema,
   getCoursesQuery,
   useCourses,
-} from "@/lib/hooks/courses";
+} from "@/lib/hooks/use-courses";
 
 export const Route = createFileRoute("/courses/")({
   meta: () => [
@@ -53,8 +53,8 @@ function Courses() {
   }
 
   return (
-    <div className="flex-col lg:p-20 p-4 flex">
-      <h2 className="text-2xl font-bold">UCI Courses</h2>
+    <div className="flex-col lg:p-16 p-4 flex">
+      <h2 className="text-3xl font-bold">UCI Courses</h2>
       <CoursesTable
         courses={courses}
         search={search}
