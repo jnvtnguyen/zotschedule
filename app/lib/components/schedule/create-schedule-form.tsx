@@ -19,7 +19,7 @@ import { Input } from "@/lib/components/ui/input";
 import { Button } from "@/lib/components/ui/button";
 import { setErrors } from "@/lib/utils/form";
 import { useToast } from "@/lib/hooks/use-toast";
-import { useAuthUserContext } from "@/lib/hooks/use-auth-user";
+import { useAuthUser } from "@/lib/hooks/use-auth-user";
 
 type CreateScheduleFormProps = {
   onScheduleCreate: (schedule: Schedule) => void;
@@ -49,7 +49,6 @@ const createSchedule = createServerFn(
     if (isDuplicateName) {
       setResponseStatus(event, 400);
       return {
-        success: false,
         errors: {
           name: "This name is already in use.",
         },
@@ -66,7 +65,6 @@ const createSchedule = createServerFn(
       .returningAll()
       .executeTakeFirstOrThrow();
     return {
-      success: true,
       schedule,
     };
   },
@@ -77,7 +75,7 @@ export function CreateScheduleForm({
   onCancel,
 }: CreateScheduleFormProps) {
   const queryClient = useQueryClient();
-  const user = useAuthUserContext((state) => state.user);
+  const user = useAuthUser((state) => state.user);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof createScheduleFormSchema>>({
@@ -93,17 +91,17 @@ export function CreateScheduleForm({
         data,
         userId: user.id,
       });
-      if (!result.success && result.errors) {
+      if (result.errors) {
         setErrors(form, result.errors);
-      } else if (result.success && result.schedule) {
-        await queryClient.invalidateQueries({
-          queryKey: ["schedules", user.id],
-        });
-        onScheduleCreate(result.schedule);
-        toast({
-          description: "Your schedule has been created successfully.",
-        });
+        return;
       }
+      await queryClient.invalidateQueries({
+        queryKey: ["schedules", user.id],
+      });
+      onScheduleCreate(result.schedule);
+      toast({
+        description: "Your schedule has been created successfully.",
+      });
     } catch (error) {
       toast({
         title: "Uh oh! Something went wrong.",
@@ -111,7 +109,6 @@ export function CreateScheduleForm({
           "Something went wrong while creating your schedule. Please try again.",
         variant: "destructive",
       });
-      throw error;
     }
   };
 

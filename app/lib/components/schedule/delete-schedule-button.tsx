@@ -27,9 +27,6 @@ const deleteSchedule = createServerFn("POST", async (schedule: Schedule) => {
     .deleteFrom("schedules")
     .where("id", "=", schedule.id)
     .executeTakeFirstOrThrow();
-  return {
-    success: true,
-  };
 });
 
 export function DeleteScheduleButton({ schedule }: DeleteScheduleButtonProps) {
@@ -50,7 +47,6 @@ export function DeleteScheduleButton({ schedule }: DeleteScheduleButtonProps) {
         description: `Failed to delete the schedule "${schedule.name}". Please try again.`,
         variant: "destructive",
       });
-      throw error;
     }
   };
 

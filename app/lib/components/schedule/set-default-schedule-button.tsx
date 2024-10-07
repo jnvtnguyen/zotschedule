@@ -31,9 +31,6 @@ const setDefaultSchedule = createServerFn(
       .set({ isDefault: true })
       .where("id", "=", schedule.id)
       .execute();
-    return {
-      success: true,
-    };
   },
 );
 
@@ -57,7 +54,6 @@ export function SetDefaultScheduleButton({
         description: `Failed to set the schedule "${schedule.name}" as the default schedule. Please try again.`,
         variant: "destructive",
       });
-      throw error;
     }
   };
 

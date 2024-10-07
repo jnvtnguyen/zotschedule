@@ -26,15 +26,15 @@ const orama = new OramaClient({
   api_key: process.env.COMBINED_ORAMA_API_KEY!,
 });
 
-type SideViewSearchFilterProps = {
+type ScheduleActionsPanelSearchFilterProps = {
   aliases: SearchAlias[];
   onSelect: (document: OramaCombinedDocument) => void;
 };
 
-export function SideViewSearchFilter({
+export function ScheduleActionsPanelSearchFilter({
   aliases,
   onSelect,
-}: SideViewSearchFilterProps) {
+}: ScheduleActionsPanelSearchFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [term, setTerm] = useDebounce(search, 100, {
@@ -51,7 +51,7 @@ export function SideViewSearchFilter({
     return aliased;
   }, [term, aliases]);
   const { data: results, status } = useQuery({
-    queryKey: ["schedule-side-view-search", aliased],
+    queryKey: ["schedule-actions-panel-search", aliased],
     queryFn: async () =>
       await orama.search({
         term: aliased,

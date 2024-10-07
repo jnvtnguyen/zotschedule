@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "CustomScheduleEventFrequency" AS ENUM ('DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY');
+
 -- CreateTable
 CREATE TABLE "departments" (
     "code" TEXT NOT NULL,
@@ -73,12 +76,30 @@ CREATE TABLE "schedules" (
 );
 
 -- CreateTable
-CREATE TABLE "schedule_events" (
+CREATE TABLE "course_schedule_events" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "schedule_id" TEXT NOT NULL,
-    "course_id" TEXT NOT NULL,
+    "section_code" INTEGER NOT NULL,
+    "term" TEXT NOT NULL,
+    "color" TEXT NOT NULL,
 
-    CONSTRAINT "schedule_events_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "course_schedule_events_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "custom_schedule_events" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "schedule_id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "start" TIMESTAMP(3) NOT NULL,
+    "end" TIMESTAMP(3) NOT NULL,
+    "frequency" "CustomScheduleEventFrequency" NOT NULL,
+    "interval" INTEGER NOT NULL,
+    "days" TEXT[],
+    "color" TEXT NOT NULL,
+
+    CONSTRAINT "custom_schedule_events_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -103,7 +124,7 @@ ALTER TABLE "user_sessions" ADD CONSTRAINT "user_sessions_user_id_fkey" FOREIGN 
 ALTER TABLE "schedules" ADD CONSTRAINT "schedules_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "schedule_events" ADD CONSTRAINT "schedule_events_schedule_id_fkey" FOREIGN KEY ("schedule_id") REFERENCES "schedules"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "course_schedule_events" ADD CONSTRAINT "course_schedule_events_schedule_id_fkey" FOREIGN KEY ("schedule_id") REFERENCES "schedules"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "schedule_events" ADD CONSTRAINT "schedule_events_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "courses"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "custom_schedule_events" ADD CONSTRAINT "custom_schedule_events_schedule_id_fkey" FOREIGN KEY ("schedule_id") REFERENCES "schedules"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -4,13 +4,13 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/lib/components/ui/select";
-import { useOfferingTermOptions } from "@/lib/hooks/use-offering-term-options";
-import { useSideViewContext } from "@/lib/components/schedule/side-view/context";
+import { useWebSocTermOptions } from "@/lib/hooks/use-websoc-term-options";
+import { useScheduleActionsPanel } from "@/lib/components/schedule/schedule-actions-panel/context";
 
-export function SideViewSearchTermsFilter() {
-  const { data: terms, status } = useOfferingTermOptions();
-  const term = useSideViewContext((state) => state.term);
-  const setTerm = useSideViewContext((state) => state.setTerm);
+export function ScheduleActionsPanelSearchTermsFilter() {
+  const { data: terms, status } = useWebSocTermOptions();
+  const term = useScheduleActionsPanel((state) => state.term);
+  const setTerm = useScheduleActionsPanel((state) => state.setTerm);
 
   if (status === "pending") {
     return <></>;

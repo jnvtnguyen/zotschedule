@@ -1,5 +1,38 @@
 export const WEBSOC_URL = "https://www.reg.uci.edu/perl/WebSoc";
 
+export const SECTION_TYPE_ORDER: (typeof SECTION_TYPES)[number][] = [
+  "Lec",
+  "Dis",
+  "Lab",
+  "Tut",
+  "Stu",
+  "Sem",
+  "Res",
+  "Qiz",
+  "Tap",
+  "Fld",
+  "Act",
+  "Col",
+];
+
+export const SECTION_TYPE_TO_LABEL: Record<
+  (typeof SECTION_TYPES)[number],
+  string
+> = {
+  Act: "Activity",
+  Col: "Colloquium",
+  Dis: "Discussion",
+  Fld: "Fieldwork",
+  Lab: "Lab",
+  Lec: "Lecture",
+  Qiz: "Quiz",
+  Res: "Research",
+  Sem: "Seminar",
+  Stu: "Studio",
+  Tap: "Tap",
+  Tut: "Tutorial",
+};
+
 export const QUARTERS = [
   "Fall",
   "Winter",
@@ -158,8 +191,8 @@ export type WebSocEnrollment = {
 };
 
 export type WebSocSection = {
-  code: string;
-  type: string;
+  code: number;
+  type: (typeof SECTION_TYPES)[number];
   number: string;
   units: string;
   modality: "In-Person" | "Online";

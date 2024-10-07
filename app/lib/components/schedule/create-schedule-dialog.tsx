@@ -5,7 +5,6 @@ import {
   DialogTitle,
 } from "@/lib/components/ui/dialog";
 import { CreateScheduleForm } from "./create-schedule-form";
-import { AuthUser } from "@/lib/auth";
 
 type CreateScheduleDialogProps = {
   isOpen: boolean;

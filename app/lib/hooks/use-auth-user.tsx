@@ -19,7 +19,7 @@ export type AuthUserStore = ReturnType<typeof createAuthUserStore>;
 
 export const AuthUserContext = createContext<AuthUserStore | null>(null);
 
-export function useAuthUserContext<T>(selector: (state: AuthUserState) => T) {
+export function useAuthUser<T>(selector: (state: AuthUserState) => T) {
   const store = useContext(AuthUserContext);
   if (!store) {
     throw new Error("Missing AuthUserContext.Provider in the tree");

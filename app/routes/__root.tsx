@@ -7,12 +7,12 @@ import {
 } from "@tanstack/react-router";
 import { Body, Head, Html, Meta, Scripts } from "@tanstack/start";
 import { QueryClient } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import nprogress from "nprogress";
 import "nprogress/nprogress.css";
 
-// @ts-ignore
-import css from "../globals.css?url";
-import { validateSession } from "@/lib/auth";
+import globalCSS from "@/globals.css?url";
+import { validateCurrentSession } from "@/lib/auth";
 import { Toaster } from "@/lib/components/ui/toaster";
 import { NotFound } from "@/lib/components/errors/not-found";
 import { Navbar } from "@/lib/components/common/navbar";
@@ -31,11 +31,11 @@ export const Route = createRootRouteWithContext<{
       content: "width=device-width, initial-scale=1",
     },
   ],
-  links: () => [{ rel: "stylesheet", href: css }],
+  links: () => [{ rel: "stylesheet", href: globalCSS }],
   component: RootComponent,
   notFoundComponent: NotFound,
   beforeLoad: async () => {
-    const session = await validateSession();
+    const session = await validateCurrentSession();
     return {
       session,
     };
@@ -72,6 +72,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         {children}
         <Scripts />
         <ScrollRestoration getKey={(location) => location.pathname} />
+        <ReactQueryDevtools initialIsOpen={false} />
       </Body>
     </Html>
   );

@@ -1,11 +1,11 @@
 import { View, Views } from "react-big-calendar";
 
-import { useScheduleCalendarContext } from "@/lib/hooks/use-schedule-calendar";
+import { useScheduleCalendar } from "@/lib/hooks/use-schedule-calendar";
 import { Tabs, TabsList, TabsTrigger } from "@/lib/components/ui/tabs";
 
 export function ScheduleTimePicker() {
-  const view = useScheduleCalendarContext((state) => state.view);
-  const setView = useScheduleCalendarContext((state) => state.setView);
+  const view = useScheduleCalendar((state) => state.view);
+  const setView = useScheduleCalendar((state) => state.setView);
 
   return (
     <Tabs value={view} onValueChange={(value) => setView(value as View)}>

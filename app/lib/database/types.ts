@@ -5,8 +5,10 @@ import {
   Department as DatabaseDepartment,
   User as DatabaseUser,
   Schedule as DatabaseSchedule,
-  ScheduleEvent as DatabaseScheduleEvent,
+  CourseScheduleEvent as DatabaseCourseScheduleEvent,
+  CustomScheduleEvent as DatabaseCustomScheduleEvent,
   SearchAlias as DatabaseSearchAlias,
+  TermCalendar as DatabaseTermCalendar,
 } from "./generated-types";
 
 export type NewDepartment = Insertable<DatabaseDepartment>;
@@ -17,5 +19,11 @@ export type Course = Selectable<DatabaseCourse> & {
 export type NewCourse = Insertable<DatabaseCourse>;
 export type User = Selectable<DatabaseUser>;
 export type Schedule = Selectable<DatabaseSchedule>;
-export type ScheduleEvent = Selectable<DatabaseScheduleEvent>;
+export type CourseScheduleEvent = Selectable<DatabaseCourseScheduleEvent>;
+export type CustomScheduleEvent = Selectable<DatabaseCustomScheduleEvent>;
+export type NewCustomScheduleEvent = Insertable<DatabaseCustomScheduleEvent>;
+export type NewCourseScheduleEvent = Insertable<DatabaseCourseScheduleEvent>;
+export type NewScheduleEvent = NewCourseScheduleEvent | NewCustomScheduleEvent;
+export type ScheduleEvent = CourseScheduleEvent | CustomScheduleEvent;
 export type SearchAlias = Selectable<DatabaseSearchAlias>;
+export type TermCalendar = Selectable<DatabaseTermCalendar>;

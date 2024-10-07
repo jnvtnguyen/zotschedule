@@ -53,13 +53,13 @@ export const createSessionForUser = createServerFn(
   },
 );
 
-export const validateSession = createServerFn("GET", async () => {
+export const validateCurrentSession = createServerFn("GET", async () => {
   const event = getEvent();
   const sessionId = getCookie(event, lucia.sessionCookieName);
   if (!sessionId) {
     setResponseStatus(event, 401);
     return {
-      success: false,
+      isLoggedIn: false,
     };
   }
 
@@ -74,7 +74,7 @@ export const validateSession = createServerFn("GET", async () => {
     );
     setResponseStatus(event, 401);
     return {
-      success: false,
+      isLoggedIn: false,
     };
   }
 
@@ -89,12 +89,12 @@ export const validateSession = createServerFn("GET", async () => {
   }
 
   return {
-    success: true,
+    isLoggedIn: true,
     user,
   };
 });
 
-export const logoutSession = createServerFn("POST", async () => {
+export const logoutCurrentSession = createServerFn("POST", async () => {
   const event = getEvent();
   const sessionId = getCookie(event, lucia.sessionCookieName);
   if (!sessionId) {

@@ -18,6 +18,7 @@ import { Input } from "@/lib/components/ui/input";
 import { Button } from "@/lib/components/ui/button";
 import { setErrors } from "@/lib/utils/form";
 import { createSessionForUser } from "@/lib/auth";
+import { toast } from "@/lib/hooks/use-toast";
 
 const signupFormSchema = z
   .object({
@@ -49,7 +50,6 @@ const signup = createServerFn(
       .executeTakeFirst();
     if (isDuplicateEmail) {
       return {
-        success: false,
         errors: {
           email: "This email is already in use.",
         },
@@ -67,7 +67,6 @@ const signup = createServerFn(
       .returning(["users.id", "users.name", "users.email"])
       .executeTakeFirstOrThrow();
     return {
-      success: true,
       user,
     };
   },
@@ -89,14 +88,18 @@ export function SignupForm() {
   const onSubmit = async (data: z.infer<typeof signupFormSchema>) => {
     try {
       const result = await signup(data);
-      if (!result.success && result.errors) {
+      if (result.errors) {
         setErrors(form, result.errors);
-      } else if (result.success && result.user) {
-        await createSessionForUser(result.user);
-        navigate({ to: "/schedule" });
+        return;
       }
+      await createSessionForUser(result.user);
+      navigate({ to: "/schedule" });
     } catch (error) {
-      throw error;
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: "Something went wrong while trying to sign up.",
+        variant: "destructive",
+      });
     }
   };
 

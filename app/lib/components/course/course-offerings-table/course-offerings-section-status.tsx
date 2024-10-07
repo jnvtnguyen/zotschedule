@@ -5,12 +5,12 @@ export function CourseOfferingsSectionStatus({
 }: {
   status: WebSocSectionStatus;
 }) {
-  const color = {
+  const colors = {
     OPEN: "text-green-500",
     Waitl: "text-blue-500",
     FULL: "text-red-500",
     NewOnly: "text-blue-500",
   };
 
-  return <div className={`${color[status]}`}>{status}</div>;
+  return <div className={`${colors[status]}`}>{status}</div>;
 }

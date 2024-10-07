@@ -19,6 +19,7 @@ import {
 import { Input } from "@/lib/components/ui/input";
 import { Button } from "@/lib/components/ui/button";
 import { setErrors } from "@/lib/utils/form";
+import { toast } from "@/lib/hooks/use-toast";
 
 const loginFormSchema = z.object({
   email: z.string().min(1, { message: "Email is required." }),
@@ -38,7 +39,6 @@ const login = createServerFn(
     if (!user) {
       setResponseStatus(event, 401);
       return {
-        success: false,
         errors: {
           password: "Invalid email or password.",
         },
@@ -47,7 +47,6 @@ const login = createServerFn(
     if (!(await verify(user.password, password))) {
       setResponseStatus(event, 401);
       return {
-        success: false,
         errors: {
           password: "Invalid email or password.",
         },
@@ -55,7 +54,6 @@ const login = createServerFn(
     }
 
     return {
-      success: true,
       user: {
         id: user.id,
         name: user.name,
@@ -79,14 +77,19 @@ export function LoginForm() {
   const onSubmit = async (data: z.infer<typeof loginFormSchema>) => {
     try {
       const result = await login(data);
-      if (!result.success && result.errors) {
+      if (result.errors) {
         setErrors(form, result.errors);
-      } else if (result.success && result.user) {
-        await createSessionForUser(result.user);
-        navigate({ to: "/schedule" });
+        return;
       }
+      await createSessionForUser(result.user);
+      navigate({ to: "/schedule" });
     } catch (error) {
-      throw error;
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description:
+          "Something went wrong while trying to log in. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 

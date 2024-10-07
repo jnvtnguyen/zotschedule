@@ -6,21 +6,21 @@ import {
   CollapsibleContent,
 } from "@/lib/components/ui/collapsible";
 
-type SideViewOfferingCollapsibleProps = {
+type ScheduleActionsPanelOfferingCollapsibleProps = {
   title: string;
   comments: string;
 };
 
-export function SideViewOfferingCollapsible({
+export function ScheduleActionsPanelOfferingCollapsible({
   title,
   comments,
-}: SideViewOfferingCollapsibleProps) {
+}: ScheduleActionsPanelOfferingCollapsibleProps) {
   return (
     <Collapsible className="flex flex-col p-3 bg-secondary rounded-lg border space-y-2">
       {comments ? (
         <>
-          <CollapsibleTrigger className="text-lg font-normal w-full flex items-center justify-between">
-            {title}
+          <CollapsibleTrigger className="text-lg font-normal w-full flex items-center justify-between text-start">
+            <span dangerouslySetInnerHTML={{ __html: title }} />
             <CaretSortIcon className="w-5 h-5" />
           </CollapsibleTrigger>
           <CollapsibleContent>
@@ -32,7 +32,9 @@ export function SideViewOfferingCollapsible({
           </CollapsibleContent>
         </>
       ) : (
-        <div className="text-lg font-normal">{title}</div>
+        <div className="text-lg font-normal">
+          <span dangerouslySetInnerHTML={{ __html: title }} />
+        </div>
       )}
     </Collapsible>
   );

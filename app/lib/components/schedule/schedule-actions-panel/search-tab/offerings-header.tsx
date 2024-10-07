@@ -1,17 +1,17 @@
 import { Button } from "@/lib/components/ui/button";
 import { ArrowLeftIcon, ReloadIcon } from "@radix-ui/react-icons";
 
-type SideViewOfferingsHeaderProps = {
+type ScheduleActionsPanelOfferingsHeaderProps = {
   onBack: () => void;
   onReload: () => void;
 };
 
-export function SideViewOfferingsHeader({
+export function ScheduleActionsPanelOfferingsHeader({
   onBack,
   onReload,
-}: SideViewOfferingsHeaderProps) {
+}: ScheduleActionsPanelOfferingsHeaderProps) {
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 sticky top-0 z-50 bg-white py-2">
       <Button onClick={onBack}>
         <ArrowLeftIcon className="w-4 h-4 mr-2" />
         Back

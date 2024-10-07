@@ -34,11 +34,11 @@ function CourseTermValueLabel({
   term?: string;
   course: Course;
 }) {
-  if (term && course.terms.find((courseTerm) => courseTerm === term)) {
+  if (term && course.terms.find((t) => t === term)) {
     const { year, quarter } = parseLetteredTerm(term);
     return `${QUARTERS_TO_LABELS[quarter]} ${year}`;
   }
-  return "Select term...";
+  return "Select a term...";
 }
 
 export function CourseOfferingsTermFilter({

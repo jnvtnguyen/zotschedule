@@ -1,22 +1,22 @@
 import { WebSocDepartment } from "@/lib/uci/offerings/types";
-import { SideViewOfferingCollapsible } from "./offering-collapsible";
-import { SideViewOfferingCourse } from "./offering-course";
+import { ScheduleActionsPanelOfferingCollapsible } from "./offering-collapsible";
+import { ScheduleActionsPanelOfferingCourse } from "./offering-course";
 
-type SideViewOfferingDepartmentProps = {
+type ScheduleActionsPanelOfferingDepartmentProps = {
   department: WebSocDepartment;
 };
 
-export function SideViewOfferingDepartment({
+export function ScheduleActionsPanelOfferingDepartment({
   department,
-}: SideViewOfferingDepartmentProps) {
+}: ScheduleActionsPanelOfferingDepartmentProps) {
   return (
     <div className="space-y-1">
-      <SideViewOfferingCollapsible
+      <ScheduleActionsPanelOfferingCollapsible
         title={department.name}
         comments={department.comment}
       />
       {department.courses.map((course, index) => (
-        <SideViewOfferingCourse
+        <ScheduleActionsPanelOfferingCourse
           key={index}
           course={course}
           department={department}

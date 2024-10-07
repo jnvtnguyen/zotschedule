@@ -8,9 +8,9 @@ type ScheduleState = {
   setSchedule: (schedule?: Schedule) => void;
 };
 
-export const createScheduleStore = (initialSchedule?: Schedule) => {
+export const createScheduleStore = (schedule?: Schedule) => {
   return create<ScheduleState>((set) => ({
-    schedule: initialSchedule,
+    schedule,
     setSchedule: (schedule) => set({ schedule }),
   }));
 };
@@ -19,7 +19,7 @@ export type ScheduleStore = ReturnType<typeof createScheduleStore>;
 
 export const ScheduleContext = createContext<ScheduleStore | null>(null);
 
-export function useScheduleContext<T>(selector: (state: ScheduleState) => T) {
+export function useSchedule<T>(selector: (state: ScheduleState) => T) {
   const store = useContext(ScheduleContext);
   if (!store) {
     throw new Error("Missing ScheduleContext.Provider in the tree");

@@ -1,3 +1,5 @@
+import React from "react";
+
 import { WebSocSection } from "@/lib/uci/offerings/types";
 import { TableCell, TableRow } from "@/lib/components/ui/table";
 import { CourseOfferingsSectionStatus } from "./course-offerings-section-status";
@@ -7,15 +9,28 @@ import { CourseOfferingsSectionInstructors } from "./course-offerings-section-in
 
 type CourseOfferingsSectionProps = {
   section: WebSocSection;
+  Actions?: React.ComponentType<{ section: WebSocSection }>;
 };
 
 export function CourseOfferingsSection({
   section,
+  Actions,
 }: CourseOfferingsSectionProps) {
   return (
     <TableRow>
+      {Actions && (
+        <TableCell>
+          <Actions section={section} />
+        </TableCell>
+      )}
       <TableCell>{section.code}</TableCell>
-      <TableCell>{section.type}</TableCell>
+      <TableCell>
+        {section.type}
+        <br />
+        Sec: {section.number}
+        <br />
+        Units: {section.units}
+      </TableCell>
       <TableCell>
         <CourseOfferingsSectionInstructors instructors={section.instructors} />
       </TableCell>

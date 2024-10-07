@@ -5,6 +5,14 @@ export type Generated<T> =
     : ColumnType<T, T | undefined, T>;
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+export const CustomScheduleEventFrequency = {
+  DAILY: "DAILY",
+  WEEKLY: "WEEKLY",
+  MONTHLY: "MONTHLY",
+  YEARLY: "YEARLY",
+} as const;
+export type CustomScheduleEventFrequency =
+  (typeof CustomScheduleEventFrequency)[keyof typeof CustomScheduleEventFrequency];
 export type Course = {
   id: string;
   number: string;
@@ -34,6 +42,25 @@ export type Course = {
     string
   >;
 };
+export type CourseScheduleEvent = {
+  id: Generated<string>;
+  scheduleId: string;
+  sectionCode: number;
+  term: string;
+  color: string;
+};
+export type CustomScheduleEvent = {
+  id: Generated<string>;
+  scheduleId: string;
+  title: string;
+  description: string;
+  start: Timestamp;
+  end: Timestamp;
+  frequency: CustomScheduleEventFrequency;
+  interval: number;
+  days: string[];
+  color: string;
+};
 export type Department = {
   code: string;
   title: string;
@@ -43,11 +70,6 @@ export type Schedule = {
   name: string;
   isDefault: boolean;
   userId: string;
-};
-export type ScheduleEvent = {
-  id: Generated<string>;
-  scheduleId: string;
-  courseId: string;
 };
 export type SearchAlias = {
   id: Generated<string>;
@@ -76,9 +98,10 @@ export type UserSession = {
   expiresAt: Timestamp;
 };
 export type DB = {
+  courseScheduleEvents: CourseScheduleEvent;
   courses: Course;
+  customScheduleEvents: CustomScheduleEvent;
   departments: Department;
-  scheduleEvents: ScheduleEvent;
   schedules: Schedule;
   searchAliases: SearchAlias;
   termCalendars: TermCalendar;

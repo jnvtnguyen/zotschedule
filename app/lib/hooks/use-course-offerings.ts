@@ -1,7 +1,7 @@
 import { FetchQueryOptions, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { getOfferings } from "@/lib/uci/offerings";
+import { callWebSocAPI } from "@/lib/uci/offerings";
 import { Course } from "@/lib/database/types";
 import { parseLetteredTerm } from "@/lib/uci/offerings";
 import { WebSocResponse } from "@/lib/uci/offerings/types";
@@ -23,7 +23,7 @@ export const getCourseOfferingsQuery = (
   return {
     queryKey: ["offerings", course.id, term.year, term.quarter],
     queryFn: async () =>
-      await getOfferings({
+      await callWebSocAPI({
         term,
         options: {
           department: course.department.code,

@@ -3,14 +3,18 @@ import { createContext, useContext } from "react";
 import { View } from "react-big-calendar";
 
 type ScheduleCalendarState = {
+  date: Date;
+  setDate: (date: Date) => void;
   view: View;
   setView: (view: View) => void;
 };
 
-export const createScheduleCalendarStore = (initialView: View) => {
+export const createScheduleCalendarStore = (view: View, date: Date) => {
   return create<ScheduleCalendarState>((set) => ({
-    view: initialView,
+    view,
     setView: (view) => set({ view }),
+    date,
+    setDate: (date) => set({ date }),
   }));
 };
 
@@ -21,7 +25,7 @@ export type ScheduleCalendarStore = ReturnType<
 export const ScheduleCalendarContext =
   createContext<ScheduleCalendarStore | null>(null);
 
-export function useScheduleCalendarContext<T>(
+export function useScheduleCalendar<T>(
   selector: (state: ScheduleCalendarState) => T,
 ) {
   const store = useContext(ScheduleCalendarContext);

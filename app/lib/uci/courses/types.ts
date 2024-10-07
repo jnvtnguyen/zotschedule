@@ -41,6 +41,15 @@ export const TERM_LETTER_DICTIONARY: Record<string, Quarter> = {
   Z: "Summer2",
 };
 
+export const TERM_CODE_DICTIONARY: Record<string, string> = {
+  "92": "Fall",
+  "03": "Winter",
+  "14": "Spring",
+  "25": "Summer1",
+  "76": "Summer2",
+  "39": "Summer10wk",
+};
+
 export type OramaCombinedDocument =
   | {
       type: "department";

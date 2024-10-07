@@ -1,24 +1,24 @@
 import { useSearchAliases } from "@/lib/hooks/use-search-aliases";
-import { SideViewSearchTermsFilter } from "./terms-filter";
-import { SideViewSearchFilter } from "./search-filter";
 import { OramaCombinedDocument } from "@/lib/uci/courses/types";
-import { useSideViewContext } from "@/lib/components/schedule/side-view/context";
+import { useScheduleActionsPanel } from "@/lib/components/schedule/schedule-actions-panel/context";
+import { ScheduleActionsPanelSearchTermsFilter } from "./terms-filter";
+import { ScheduleActionsPanelSearchFilter } from "./search-filter";
 
-export type SideViewSearchValues = {
+export type ScheduleActionsPanelSearchValues = {
   term: string;
   department: string;
   course?: string;
 };
 
-type SideViewSearchFiltersProps = {
-  onSearch: (search: SideViewSearchValues) => void;
+type ScheduleActionsPanelSearchFiltersProps = {
+  onSearch: (search: ScheduleActionsPanelSearchValues) => void;
 };
 
-export function SideViewSearchFilters({
+export function ScheduleActionsPanelSearchFilters({
   onSearch,
-}: SideViewSearchFiltersProps) {
+}: ScheduleActionsPanelSearchFiltersProps) {
   const { data: aliases, status } = useSearchAliases();
-  const term = useSideViewContext((state) => state.term);
+  const term = useScheduleActionsPanel((state) => state.term);
 
   if (status === "pending") {
     return <></>;
@@ -41,8 +41,8 @@ export function SideViewSearchFilters({
 
   return (
     <div className="flex flex-col p-1 space-y-4">
-      <SideViewSearchTermsFilter />
-      <SideViewSearchFilter aliases={aliases} onSelect={onSelect} />
+      <ScheduleActionsPanelSearchTermsFilter />
+      <ScheduleActionsPanelSearchFilter aliases={aliases} onSelect={onSelect} />
     </div>
   );
 }

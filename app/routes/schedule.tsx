@@ -1,17 +1,18 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Views } from "react-big-calendar";
-// @ts-ignore
-import reactBigCalendarCss from "react-big-calendar/lib/css/react-big-calendar.css?url";
+import reactBigCalendarCSS from "react-big-calendar/lib/css/react-big-calendar.css?url";
+import reactBigCalendarDragAndDropCSS from "react-big-calendar/lib/addons/dragAndDrop/styles.css?url";
 
 import {
   createScheduleCalendarStore,
   ScheduleCalendarContext,
 } from "@/lib/hooks/use-schedule-calendar";
 import { getSchedulesQuery, useSchedules } from "@/lib/hooks/use-schedules";
+import { getTermCalendarsQuery } from "@/lib/hooks/use-term-calendars";
 import { CreateScheduleDialog } from "@/lib/components/schedule/create-schedule-dialog";
 import { createScheduleStore, ScheduleContext } from "@/lib/hooks/use-schedule";
 import { getSearchAliasesQuery } from "@/lib/hooks/use-search-aliases";
-import { getOfferingTermOptionsQuery } from "@/lib/hooks/use-offering-term-options";
+import { getWebSocTermOptionsQuery } from "@/lib/hooks/use-websoc-term-options";
 import { ScheduleCalendar } from "@/lib/components/schedule/schedule-calendar";
 import {
   AuthUserContext,
@@ -22,9 +23,9 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/lib/components/ui/resizable";
-import { ScheduleSideView } from "@/lib/components/schedule/side-view";
-// @ts-ignore
-import customReactBigCalendarCss from "@/lib/components/schedule/custom-react-big-calendar.css?url";
+import { ScheduleActionsPanel } from "@/lib/components/schedule/schedule-actions-panel";
+import { getScheduleCalendarEventsQuery } from "@/lib/hooks/use-schedule-calendar-events";
+import customReactBigCalendarCSS from "@/lib/components/schedule/custom-react-big-calendar.css?url";
 
 export const Route = createFileRoute("/schedule")({
   meta: () => [
@@ -33,25 +34,37 @@ export const Route = createFileRoute("/schedule")({
     },
   ],
   links: () => [
-    { rel: "stylesheet", href: reactBigCalendarCss },
-    { rel: "stylesheet", href: customReactBigCalendarCss },
+    { rel: "stylesheet", href: reactBigCalendarCSS },
+    { rel: "stylesheet", href: customReactBigCalendarCSS },
+    { rel: "stylesheet", href: reactBigCalendarDragAndDropCSS },
   ],
-  component: ScheduleDisplay,
+  component: Schedule,
   beforeLoad: async ({ context: { session, queryClient } }) => {
-    if (!session.success || !session.user) {
+    if (!session.isLoggedIn || !session.user) {
       throw redirect({ to: "/auth/login" });
     }
     await queryClient.prefetchQuery(getSchedulesQuery(session.user.id));
-    await queryClient.prefetchQuery(getOfferingTermOptionsQuery);
+    await queryClient.prefetchQuery(getWebSocTermOptionsQuery);
     await queryClient.prefetchQuery(getSearchAliasesQuery);
+    await queryClient.prefetchQuery(getTermCalendarsQuery);
+
+    const schedules = await queryClient.ensureQueryData(
+      getSchedulesQuery(session.user.id),
+    );
+    const schedule = schedules.find((schedule) => schedule.isDefault);
+    if (schedule) {
+      await queryClient.prefetchQuery(
+        getScheduleCalendarEventsQuery(schedule.id),
+      );
+    }
+
     return {
       session,
-      queryClient,
     };
   },
 });
 
-function ScheduleDisplay() {
+function Schedule() {
   const { session } = Route.useRouteContext();
   const { data: schedules, status } = useSchedules(session.user.id);
 
@@ -73,18 +86,26 @@ function ScheduleDisplay() {
             schedules.find((schedule) => schedule.isDefault),
           )}
         >
-          <div className="flex-col lg:p-2 p-4 flex space-y-4 h-full w-full">
+          <div className="lg:p-2 p-4 space-y-4 h-full w-full">
             <ResizablePanelGroup direction="horizontal" className="space-x-4">
-              <ResizablePanel minSize={25}>
+              <ResizablePanel
+                minSize={25}
+                defaultSize={65}
+                className="h-[calc(100vh-4.8rem)]"
+              >
                 <ScheduleCalendarContext.Provider
-                  value={createScheduleCalendarStore(Views.WEEK)}
+                  value={createScheduleCalendarStore(Views.WEEK, new Date())}
                 >
-                  <ScheduleCalendar schedules={schedules} />
+                  <ScheduleCalendar />
                 </ScheduleCalendarContext.Provider>
               </ResizablePanel>
               <ResizableHandle withHandle />
-              <ResizablePanel minSize={25}>
-                <ScheduleSideView />
+              <ResizablePanel
+                minSize={25}
+                defaultSize={35}
+                className="h-[calc(100vh-4.8rem)] pb-2"
+              >
+                <ScheduleActionsPanel />
               </ResizablePanel>
             </ResizablePanelGroup>
           </div>

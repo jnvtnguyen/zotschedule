@@ -42,8 +42,6 @@ model Course {
   /// @kyselyType(ColumnType<import('@/lib/uci/prerequisites/types').PrerequisiteTree, string, string>)
   prerequisite_tree Json
 
-  schedule_events ScheduleEvent[]
-
   @@map("courses")
 }
 
@@ -89,20 +87,46 @@ model Schedule {
   user_id String
   user    User   @relation(fields: [user_id], references: [id])
 
-  events ScheduleEvent[]
+  course_events CourseScheduleEvent[]
+  custom_events CustomScheduleEvent[]
 
   @@map("schedules")
 }
 
-model ScheduleEvent {
+model CourseScheduleEvent {
   id String @id @default(dbgenerated("gen_random_uuid()"))
 
   schedule_id String
   schedule    Schedule @relation(fields: [schedule_id], references: [id])
-  course_id   String
-  course      Course   @relation(fields: [course_id], references: [id])
+  section_code Int
+  term String
+  color String
 
-  @@map("schedule_events")
+  @@map("course_schedule_events")
+}
+
+enum CustomScheduleEventFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+model CustomScheduleEvent {
+  id String @id @default(dbgenerated("gen_random_uuid()"))
+
+  schedule_id String
+  schedule    Schedule @relation(fields: [schedule_id], references: [id])
+  title String
+  description String
+  start DateTime
+  end DateTime
+  frequency CustomScheduleEventFrequency
+  interval Int
+  days String[]
+  color String
+
+  @@map("custom_schedule_events")
 }
 
 model SearchAlias {
