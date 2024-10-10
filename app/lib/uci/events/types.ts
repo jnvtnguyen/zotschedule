@@ -28,3 +28,21 @@ export const isCourseScheduleEvent = (
 ): event is CourseScheduleEvent => {
   return "sectionCode" in event;
 };
+
+export const FREQUENCY_TO_LABEL: Record<string, string> = {
+  DAILY: "Daily",
+  WEEKLY: "Weekly",
+  BIWEEKLY: "Biweekly",
+  MONTHLY: "Monthly",
+  YEARLY: "Yearly",
+};
+
+export const DAY_TO_LABEL: Record<string, string> = {
+  MO: "Monday",
+  TU: "Tuesday",
+  WE: "Wednesday",
+  TH: "Thursday",
+  FR: "Friday",
+  SA: "Saturday",
+  SU: "Sunday",
+};

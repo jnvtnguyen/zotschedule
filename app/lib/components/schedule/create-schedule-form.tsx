@@ -61,7 +61,7 @@ const createSchedule = createServerFn(
       .execute();
     const schedule = await database
       .insertInto("schedules")
-      .values({ name, userId, isDefault: true })
+      .values({ name, userId, isDefault: true, showWeekends: true })
       .returningAll()
       .executeTakeFirstOrThrow();
     return {
@@ -137,7 +137,7 @@ export function CreateScheduleForm({
         />
         <div className="flex justify-end space-x-2">
           {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button type="button" variant="outline" onClick={() => onCancel()}>
               Cancel
             </Button>
           )}

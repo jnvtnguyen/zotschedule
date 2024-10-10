@@ -44,6 +44,7 @@ export const Route = createRootRouteWithContext<{
 
 function RootComponent() {
   const router = useRouter();
+  const isScheduleRoute = router.getMatch("/schedule");
   const { session } = Route.useRouteContext();
   router.subscribe(
     "onBeforeLoad",
@@ -54,7 +55,7 @@ function RootComponent() {
   return (
     <RootDocument>
       <div className="h-full w-full flex flex-col">
-        <Navbar user={session.user} />
+        {!isScheduleRoute && <Navbar user={session.user} />}
         <Outlet />
       </div>
       <Toaster />

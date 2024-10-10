@@ -46,6 +46,12 @@ const getScheduleCalendarEvents = createServerFn(
   },
 );
 
+export const isCourseScheduleCalendarEvent = (
+  event: ScheduleCalendarEvent,
+): event is CourseScheduleCalendarEvent => {
+  return "info" in event;
+};
+
 export const getScheduleCalendarEventsQuery = (
   scheduleId: string,
 ): FetchQueryOptions<ScheduleCalendarEvent[]> => ({

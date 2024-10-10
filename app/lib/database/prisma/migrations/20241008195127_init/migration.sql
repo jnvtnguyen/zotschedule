@@ -70,6 +70,7 @@ CREATE TABLE "schedules" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "name" TEXT NOT NULL,
     "is_default" BOOLEAN NOT NULL,
+    "show_weekends" BOOLEAN NOT NULL,
     "user_id" TEXT NOT NULL,
 
     CONSTRAINT "schedules_pkey" PRIMARY KEY ("id")

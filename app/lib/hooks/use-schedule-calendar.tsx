@@ -1,20 +1,29 @@
 import { create, useStore } from "zustand";
 import { createContext, useContext } from "react";
-import { View } from "react-big-calendar";
+
+export type View = "dayGridMonth" | "timeGridWeek" | "timeGridDay";
 
 type ScheduleCalendarState = {
   date: Date;
   setDate: (date: Date) => void;
   view: View;
   setView: (view: View) => void;
+  showWeekends: boolean;
+  setShowWeekends: (weekends: boolean) => void;
 };
 
-export const createScheduleCalendarStore = (view: View, date: Date) => {
+export const createScheduleCalendarStore = (
+  view: View,
+  date: Date,
+  showWeekends: boolean,
+) => {
   return create<ScheduleCalendarState>((set) => ({
     view,
     setView: (view) => set({ view }),
     date,
     setDate: (date) => set({ date }),
+    showWeekends,
+    setShowWeekends: (showWeekends) => set({ showWeekends }),
   }));
 };
 

@@ -83,6 +83,7 @@ model Schedule {
   id         String  @id @default(dbgenerated("gen_random_uuid()"))
   name       String
   is_default Boolean
+  show_weekends Boolean
 
   user_id String
   user    User   @relation(fields: [user_id], references: [id])

@@ -1,0 +1,30 @@
+.fc-timegrid-slot-label-cushion {
+  font-size: 0.84rem;
+}
+
+.fc-col-header-cell-cushion {
+  font-weight: normal;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.fc-timegrid-event .fc-event-main {
+  padding: 0px 5px 5px 5px;
+}
+
+.fc-event.new-event {
+  cursor: grab;
+}
+
+.fc-timegrid-slot-lane.fc-timegrid-slot-minor,
+.fc-timegrid-slot-label.fc-timegrid-slot-minor {
+  border: 0;
+}
+
+.fc-event.new-event {
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.fc-event {
+  cursor: pointer;
+}

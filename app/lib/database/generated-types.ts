@@ -69,6 +69,7 @@ export type Schedule = {
   id: Generated<string>;
   name: string;
   isDefault: boolean;
+  showWeekends: boolean;
   userId: string;
 };
 export type SearchAlias = {

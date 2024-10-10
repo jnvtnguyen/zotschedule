@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { parse } from "date-fns";
+import { EventInput } from "@fullcalendar/core";
 import { Schedule as RSchedule, Rule } from "./rschedule";
 
 import { useScheduleCalendarEvents } from "@/lib/hooks/use-schedule-calendar-events";
@@ -49,7 +50,7 @@ export const useCalendarEvents = (scheduleId: string) => {
   const events = useScheduleCalendarEvents(scheduleId);
   const terms = useTermCalendars();
 
-  return useMemo(() => {
+  return useMemo<EventInput[]>(() => {
     if (
       events.status === "pending" ||
       events.status === "error" ||
@@ -126,63 +127,30 @@ export const useCalendarEvents = (scheduleId: string) => {
           };
           return occurences.begin.map((start, index) => {
             return {
-              title: (
-                <CourseEventTitle
-                  title={`${meeting.info.department.code} ${meeting.info.course.number}`}
-                  type={meeting.info.section.type}
-                  location={`${meeting.building} ${meeting.room}`}
-                />
-              ),
+              title: `${meeting.info.department.code} ${meeting.info.course.number}`,
               start: start.date,
               end: occurences.end[index].date,
-              resource: {
-                color: meeting.color,
-                event: meeting,
-              },
+              color: meeting.color,
+              event: meeting,
+              building: meeting.building,
+              room: meeting.room,
+              startEditable: false,
+              durationEditable: false,
+              frequency: "WEEKLY",
+              days: days,
             };
           });
         }
         return {
-          title: <CustomEventTitle title={meeting.title} />,
+          title: meeting.title,
           start: meeting.start,
           end: meeting.end,
-          resource: {
-            color: meeting.color,
-            event: meeting,
-          },
+          color: meeting.color,
+          event: meeting,
+          editable: true,
         };
       })
       .flat()
       .filter((meeting) => meeting !== undefined);
   }, [events.data, events.status, terms.data, terms.status]);
 };
-
-function CustomEventTitle({ title }: { title: string }) {
-  return (
-    <div className="flex flex-col text-xs flex-wrap">
-      <span className="font-semibold">{title === "" ? "(No Title)" : title}</span>
-    </div>
-  );
-}
-
-function CourseEventTitle({
-  title,
-  type,
-  location,
-}: {
-  title: string;
-  type: string;
-  location: string;
-}) {
-  return (
-    <div className="flex flex-col">
-      <div className="flex flex-row justify-between text-xs">
-        <div className="flex flex-col">
-          <span className="font-semibold">{title}</span>
-        </div>
-        <span className="font-semibold">{type}</span>
-      </div>
-      <span className="text-xs">{location}</span>
-    </div>
-  );
-}

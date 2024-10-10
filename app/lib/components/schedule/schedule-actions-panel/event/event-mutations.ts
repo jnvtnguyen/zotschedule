@@ -47,19 +47,22 @@ const add = createServerFn(
   },
 );
 
-const remove = createServerFn("POST", async ({ event }: { event: ScheduleEvent }) => {
-  if (isCourseScheduleEvent(event)) {
+const remove = createServerFn(
+  "POST",
+  async ({ event }: { event: ScheduleEvent }) => {
+    if (isCourseScheduleEvent(event)) {
+      await database
+        .deleteFrom("courseScheduleEvents")
+        .where("id", "=", event.id)
+        .executeTakeFirstOrThrow();
+      return;
+    }
     await database
-      .deleteFrom("courseScheduleEvents")
+      .deleteFrom("customScheduleEvents")
       .where("id", "=", event.id)
       .executeTakeFirstOrThrow();
-    return;
-  }
-  await database
-    .deleteFrom("customScheduleEvents")
-    .where("id", "=", event.id)
-    .executeTakeFirstOrThrow();
-});
+  },
+);
 
 export const useEventMutations = ({ scheduleId }: { scheduleId: string }) => {
   const { toast } = useToast();

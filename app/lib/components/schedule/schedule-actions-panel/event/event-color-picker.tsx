@@ -40,11 +40,15 @@ const updateEventColor = createServerFn(
 
 type EventColorPickerProps = {
   event: ScheduleEvent;
-  icon?: 'palette' | 'circle';
+  icon?: "palette" | "circle";
   isInDatabase?: boolean;
 };
 
-export function EventColorPicker({ event, icon = "palette", isInDatabase = true }: EventColorPickerProps) {
+export function EventColorPicker({
+  event,
+  icon = "palette",
+  isInDatabase = true,
+}: EventColorPickerProps) {
   const { toast } = useToast();
   const color = useMemo(() => event.color, [event.color]);
   const queryClient = useQueryClient();
@@ -90,7 +94,13 @@ export function EventColorPicker({ event, icon = "palette", isInDatabase = true 
   };
 
   return (
-    <Popover>
+    <Popover
+      onOpenChange={(open) => {
+        if (!open) {
+          onBlur();
+        }
+      }}
+    >
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon">
           {icon === "circle" ? (
@@ -107,7 +117,6 @@ export function EventColorPicker({ event, icon = "palette", isInDatabase = true 
         <Sketch
           color={event.color}
           onChange={onColorChange}
-          onBlur={onBlur}
           presetColors={PRESET_EVENT_COLORS}
         />
       </PopoverContent>
