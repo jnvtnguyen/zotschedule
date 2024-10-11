@@ -113,6 +113,25 @@ enum CustomScheduleEventFrequency {
   YEARLY
 }
 
+enum CustomScheduleEventRepeatability {
+  NONE
+  DAILY
+  WEEKLY
+  WEEKDAY
+  MONTHLY
+  CUSTOM
+}
+
+enum CustomScheduleEventDay {
+  SU
+  MO
+  TU
+  WE
+  TH
+  FR
+  SA
+}
+
 model CustomScheduleEvent {
   id String @id @default(dbgenerated("gen_random_uuid()"))
 
@@ -122,10 +141,14 @@ model CustomScheduleEvent {
   description String
   start DateTime
   end DateTime
-  frequency CustomScheduleEventFrequency
-  interval Int
-  days String[]
+  frequency CustomScheduleEventFrequency?
+  interval Int?
+  days CustomScheduleEventDay[]
+  weeks String[]
+  months String[]
   color String
+  repeatability CustomScheduleEventRepeatability
+  repeat_until DateTime?
 
   @@map("custom_schedule_events")
 }

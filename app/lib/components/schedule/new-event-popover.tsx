@@ -3,7 +3,10 @@ import { EventImpl } from "@fullcalendar/core/internal";
 import { isSameDay, isSameMonth, isSameWeek } from "date-fns";
 
 import { useSchedule } from "@/lib/hooks/use-schedule";
-import { ScheduleCalendarEvent } from "@/lib/hooks/use-schedule-calendar-events";
+import {
+  CustomScheduleCalendarEvent,
+  ScheduleCalendarEvent,
+} from "@/lib/hooks/use-schedule-calendar-events";
 import { useScheduleCalendar } from "@/lib/hooks/use-schedule-calendar";
 import { NewEventForm } from "./new-event-form";
 import { EventPopover, EventPopoverProps } from "./event-popover";
@@ -27,7 +30,11 @@ export function NewEventPopover({
   const date = useScheduleCalendar((state) => state.date);
   const setDate = useScheduleCalendar((state) => state.setDate);
 
-  const onEventChange = ({ title, start, end }: Partial<EventImpl>) => {
+  const onEventChange = ({
+    start,
+    end,
+    ...rest
+  }: Partial<CustomScheduleCalendarEvent>) => {
     if (start) {
       queryClient.setQueryData(
         ["schedule-events", schedule.id],
@@ -68,7 +75,7 @@ export function NewEventPopover({
         },
       );
     }
-    if (title !== undefined) {
+    if (rest) {
       queryClient.setQueryData(
         ["schedule-events", schedule.id],
         (events: ScheduleCalendarEvent[]) => {
@@ -76,7 +83,7 @@ export function NewEventPopover({
             if (e.id === "new") {
               return {
                 ...e,
-                title,
+                ...rest,
               };
             }
             return e;

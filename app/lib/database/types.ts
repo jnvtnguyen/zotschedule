@@ -9,6 +9,7 @@ import {
   CustomScheduleEvent as DatabaseCustomScheduleEvent,
   SearchAlias as DatabaseSearchAlias,
   TermCalendar as DatabaseTermCalendar,
+  CustomScheduleEventFrequency as DatabaseCustomScheduleEventFrequency,
 } from "./generated-types";
 
 export type NewDepartment = Insertable<DatabaseDepartment>;

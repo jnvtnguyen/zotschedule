@@ -50,23 +50,26 @@ export function EventInfoPopover({
         {base.extendedProps.frequency && (
           <p className="text-xs">
             {FREQUENCY_TO_LABEL[base.extendedProps.frequency]}
-            {base.extendedProps.days &&
-              ` on ${base.extendedProps.days.map((day: string) => DAY_TO_LABEL[day]).join(", ")}`}
+            {base.extendedProps.days?.length ? 
+              ` on ${base.extendedProps.days.map((day: string) => DAY_TO_LABEL[day]).join(", ")}` : ""}
+            {base.extendedProps.repeatsUntil ? ` until ${format(base.extendedProps.repeatsUntil, "EEEE, MMMM d")}` : ""}
           </p>
         )}
       </div>
-      {isCourseEvent && (
-        <div className="flex flex-col text-[0.84rem]">
-          <p>
-            Location: {base.extendedProps.building} {base.extendedProps.room}
-          </p>
-          <p>Instructors: {event.info.section.instructors.join(", ")}</p>
-          <div className="flex flex-row justify-end items-center">
-            <EventColorPicker event={event} icon="circle" />
-            <RemoveEventButton event={event} onRemove={onClose} />
+      <div>
+        {isCourseEvent && (
+          <div className="flex flex-col text-[0.84rem]">
+            <p>
+              Location: {base.extendedProps.building} {base.extendedProps.room}
+            </p>
+            <p>Instructors: {event.info.section.instructors.join(", ")}</p> 
           </div>
+        )}
+        <div className="flex flex-row justify-end items-center">
+          <EventColorPicker event={event} icon="circle" />
+          <RemoveEventButton event={event} onRemove={onClose} />
         </div>
-      )}
+      </div>
     </EventPopover>
   );
 }

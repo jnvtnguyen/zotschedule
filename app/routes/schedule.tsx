@@ -15,8 +15,6 @@ import {
 import { getScheduleCalendarEventsQuery } from "@/lib/hooks/use-schedule-calendar-events";
 import customFullCalendarCSS from "@/lib/components/schedule/custom-fullcalendar.css?url";
 import { ScheduleView } from "@/lib/components/schedule";
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
 
 export const Route = createFileRoute("/schedule")({
   meta: () => [

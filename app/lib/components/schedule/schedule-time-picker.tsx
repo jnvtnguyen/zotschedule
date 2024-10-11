@@ -38,6 +38,7 @@ const VIEW_TO_LABEL: Record<View, string> = {
   dayGridMonth: "Month",
   timeGridWeek: "Week",
   timeGridDay: "Day",
+  listYear: "Schedule",
 };
 
 export function ScheduleTimePicker() {

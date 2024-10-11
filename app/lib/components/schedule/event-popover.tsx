@@ -54,8 +54,9 @@ export function EventPopover({
     outsidePress: (e: MouseEvent) => {
       if (
         e.target instanceof HTMLElement &&
-        e.target.closest(".fc-event") &&
-        document.querySelector(".fc-event.new-event")
+        ((e.target.closest(".fc-event") &&
+          document.querySelector(".fc-event.new-event")) ||
+          e.target.tagName === "HTML")
       ) {
         return false;
       }
@@ -83,7 +84,7 @@ export function EventPopover({
         ...floatingStyles,
       }}
       {...getFloatingProps()}
-      className="z-50 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none w-80"
+      className="z-50 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none w-full max-w-80"
     >
       <div className="flex flex-col gap-4">
         <div className="flex flex-row justify-between items-center">
@@ -93,6 +94,7 @@ export function EventPopover({
             size="icon"
             className="w-5 h-5"
             onClick={() => onClose()}
+            type="button"
           >
             <X />
           </Button>

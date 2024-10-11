@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/start";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import superjson from "superjson";
 
 import { database } from "@/lib/database";
 import { NewScheduleEvent, ScheduleEvent } from "@/lib/database/types";
@@ -18,7 +19,7 @@ const add = createServerFn(
       if (exists) {
         throw new Error("Course already in schedule.");
       }
-      return await database
+      return superjson.stringify(await database
         .insertInto("courseScheduleEvents")
         .values({
           scheduleId: event.scheduleId,
@@ -27,23 +28,9 @@ const add = createServerFn(
           color: event.color,
         })
         .returningAll()
-        .executeTakeFirstOrThrow();
+        .executeTakeFirstOrThrow());
     }
-    return await database
-      .insertInto("customScheduleEvents")
-      .values({
-        scheduleId: event.scheduleId,
-        title: event.title,
-        description: event.description,
-        start: event.start,
-        end: event.end,
-        frequency: event.frequency,
-        interval: event.interval,
-        days: event.days,
-        color: event.color,
-      })
-      .returningAll()
-      .executeTakeFirstOrThrow();
+    return '';
   },
 );
 
@@ -71,18 +58,7 @@ export const useEventMutations = ({ scheduleId }: { scheduleId: string }) => {
   const mutations = {
     add: useMutation({
       mutationFn: async (event: NewScheduleEvent) => {
-        // TODO: Revamp this when server functions can serialize dates.
-        const newEvent = await add({ event });
-        if ("sectionCode" in newEvent) {
-          return newEvent;
-        }
-        return {
-          ...newEvent,
-          // @ts-expect-error
-          start: new Date(newEvent.start),
-          // @ts-expect-error
-          end: new Date(newEvent.end),
-        };
+        return superjson.parse<ScheduleEvent>(await add({ event }));
       },
       onSuccess: async (event: ScheduleEvent) => {
         await queryClient.invalidateQueries({

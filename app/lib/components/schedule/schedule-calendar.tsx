@@ -7,10 +7,18 @@ import {
   EventContentArg,
 } from "@fullcalendar/core";
 import { EventImpl } from "@fullcalendar/core/internal";
-import { addMinutes, subMinutes } from "date-fns";
+import {
+  addHours,
+  addMinutes,
+  format,
+  roundToNearestHours,
+  subMinutes,
+} from "date-fns";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
+import listPlugin from "@fullcalendar/list";
 import interactionPlugin, {
+  DateClickArg,
   EventReceiveArg,
   EventResizeDoneArg,
 } from "@fullcalendar/interaction";
@@ -26,11 +34,22 @@ import {
   ScheduleCalendarEvent,
 } from "@/lib/hooks/use-schedule-calendar-events";
 import { cn } from "@/lib/utils/style";
+import { CustomScheduleEventRepeatability } from "@/lib/database/generated-types";
 import { EventInfoPopover } from "./event-info-popover";
 
 type ScheduleCalendarProps = {
   width: number;
 };
+
+const NEW_EVENT = (start: Date, end: Date) => ({
+  id: "new",
+  title: "",
+  description: "",
+  start: start,
+  end: end,
+  color: DEFAULT_EVENT_COLOR,
+  repeatability: CustomScheduleEventRepeatability.NONE,
+});
 
 export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   const schedule = useSchedule((state) => state.schedule);
@@ -45,7 +64,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   const view = useScheduleCalendar((state) => state.view);
   const date = useScheduleCalendar((state) => state.date);
   const showWeekends = useScheduleCalendar((state) => state.showWeekends);
-  const events = useCalendarEvents(schedule.id);
+  const events = useCalendarEvents(schedule.id, view, date);
   const ref = useRef<FullCalendar>(null);
 
   const reset = async (anchor?: HTMLAnchorElement, selected?: EventImpl) => {
@@ -80,30 +99,23 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   }, [width]);
 
   const onSelect = (info: DateSelectArg) => {
-    if (selected) {
-      reset();
-      return;
-    }
     let start = info.start;
     let end = info.end;
-    if (subMinutes(info.end, 15).getTime() === info.start.getTime()) {
-      start = info.start;
-      end = addMinutes(info.end, 45);
-    }
     queryClient.setQueryData(
       ["schedule-events", schedule.id],
       (events: ScheduleEvent[]) => {
-        return [
-          ...events,
-          {
-            id: "new",
-            title: "",
-            description: "",
-            start: start,
-            end: end,
-            color: DEFAULT_EVENT_COLOR,
-          },
-        ];
+        return [...events, NEW_EVENT(start, end)];
+      },
+    );
+  };
+
+  const onClick = (info: DateClickArg) => {
+    let start = roundToNearestHours(info.date, { roundingMethod: "floor" });
+    let end = addHours(start, 1);
+    queryClient.setQueryData(
+      ["schedule-events", schedule.id],
+      (events: ScheduleEvent[]) => {
+        return [...events, NEW_EVENT(start, end)];
       },
     );
   };
@@ -141,16 +153,16 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
         height="100%"
         initialDate={date}
         initialView={view}
-        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
         ref={ref}
         events={events}
         allDaySlot={false}
         headerToolbar={false}
         slotMinTime={"02:00:00"}
         slotMaxTime={"25:00:00"}
-        timeZone="local"
         eventContent={EventContent}
         weekends={showWeekends}
+        selectMinDistance={5}
         slotDuration={{
           hours: 1,
         }}
@@ -179,6 +191,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
         editable={true}
         droppable={true}
         select={onSelect}
+        dateClick={onClick}
         eventClick={onEventClick}
         eventClassNames={(event) => {
           if (event.event.extendedProps.event.id === "new") {
@@ -236,7 +249,8 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
 }
 
 function EventContent(props: EventContentArg) {
-  const event = props.event.extendedProps.event as ScheduleCalendarEvent;
+  const extended = props.event.extendedProps;
+  const event = extended.event as ScheduleCalendarEvent;
 
   if (isCourseScheduleCalendarEvent(event)) {
     return (
@@ -248,8 +262,8 @@ function EventContent(props: EventContentArg) {
           <p>{event.info.section.type}</p>
         </div>
         <p className="text-xs">
-          {props.timeText}, {props.event.extendedProps.building}{" "}
-          {props.event.extendedProps.room}
+          {format(props.event.start!, "hh:mm a")} - {format(props.event.end!, "hh:mm a")}, {extended.building}{" "}
+          {extended.room}
         </p>
       </div>
     );
@@ -265,7 +279,9 @@ function EventContent(props: EventContentArg) {
       <p className="font-semibold text-[0.8rem]">
         {event.title === "" ? "(No Title)" : event.title}
       </p>
-      <p className="text-xs">{props.timeText}</p>
+      <p className="text-xs">
+        {format(props.event.start!, "hh:mm a")} - {format(props.event.end!, "hh:mm a")}
+      </p>
     </div>
   );
 }

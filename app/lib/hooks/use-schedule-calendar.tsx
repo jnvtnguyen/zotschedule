@@ -1,7 +1,7 @@
 import { create, useStore } from "zustand";
 import { createContext, useContext } from "react";
 
-export type View = "dayGridMonth" | "timeGridWeek" | "timeGridDay";
+export type View = "dayGridMonth" | "timeGridWeek" | "timeGridDay" | "listYear";
 
 type ScheduleCalendarState = {
   date: Date;

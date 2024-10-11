@@ -1,5 +1,6 @@
 import { FetchQueryOptions, useQuery } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/start";
+import superjson from 'superjson';
 
 import {
   ScheduleEvent as BaseScheduleEvent,
@@ -31,7 +32,7 @@ export type ScheduleCalendarEvent =
 
 const getScheduleCalendarEvents = createServerFn(
   "POST",
-  async (scheduleId: string): Promise<BaseScheduleEvent[]> => {
+  async (scheduleId: string) => {
     const courseEvents = await database
       .selectFrom("courseScheduleEvents")
       .where("scheduleId", "=", scheduleId)
@@ -42,7 +43,7 @@ const getScheduleCalendarEvents = createServerFn(
       .where("scheduleId", "=", scheduleId)
       .selectAll()
       .execute();
-    return [...courseEvents, ...customEvents];
+    return superjson.stringify([...courseEvents, ...customEvents]);
   },
 );
 
@@ -57,23 +58,7 @@ export const getScheduleCalendarEventsQuery = (
 ): FetchQueryOptions<ScheduleCalendarEvent[]> => ({
   queryKey: ["schedule-events", scheduleId],
   queryFn: async () => {
-    // TODO: Revamp this when server functions can serialize dates.
-    const events = (await getScheduleCalendarEvents(scheduleId)).map(
-      (event) => {
-        if ("sectionCode" in event) {
-          return {
-            ...event,
-          };
-        }
-        return {
-          ...event,
-          // @ts-expect-error
-          start: new Date(event.start),
-          // @ts-expect-error
-          end: new Date(event.end),
-        };
-      },
-    );
+    const events = superjson.parse<BaseScheduleEvent[]>(await getScheduleCalendarEvents(scheduleId));
     if (events.length === 0) {
       return [];
     }

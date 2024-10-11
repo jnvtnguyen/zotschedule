@@ -1,6 +1,12 @@
 -- CreateEnum
 CREATE TYPE "CustomScheduleEventFrequency" AS ENUM ('DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY');
 
+-- CreateEnum
+CREATE TYPE "CustomScheduleEventRepeatability" AS ENUM ('NONE', 'DAILY', 'WEEKLY', 'WEEKDAY', 'MONTHLY', 'CUSTOM');
+
+-- CreateEnum
+CREATE TYPE "CustomScheduleEventDay" AS ENUM ('SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA');
+
 -- CreateTable
 CREATE TABLE "departments" (
     "code" TEXT NOT NULL,
@@ -95,10 +101,14 @@ CREATE TABLE "custom_schedule_events" (
     "description" TEXT NOT NULL,
     "start" TIMESTAMP(3) NOT NULL,
     "end" TIMESTAMP(3) NOT NULL,
-    "frequency" "CustomScheduleEventFrequency" NOT NULL,
-    "interval" INTEGER NOT NULL,
-    "days" TEXT[],
+    "frequency" "CustomScheduleEventFrequency",
+    "interval" INTEGER,
+    "days" "CustomScheduleEventDay"[],
+    "weeks" TEXT[],
+    "months" TEXT[],
     "color" TEXT NOT NULL,
+    "repeatability" "CustomScheduleEventRepeatability" NOT NULL,
+    "repeat_until" TIMESTAMP(3),
 
     CONSTRAINT "custom_schedule_events_pkey" PRIMARY KEY ("id")
 );
