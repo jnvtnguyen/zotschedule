@@ -1,6 +1,6 @@
 import { FetchQueryOptions, useQuery } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/start";
-import superjson from 'superjson';
+import superjson from "superjson";
 
 import {
   ScheduleEvent as BaseScheduleEvent,
@@ -15,6 +15,7 @@ import {
   WebSocSection,
 } from "@/lib/uci/offerings/types";
 import { isCourseScheduleEvent } from "@/lib/uci/events/types";
+import { sql } from "kysely";
 
 export type CourseScheduleCalendarEvent = {
   info: {
@@ -42,6 +43,7 @@ const getScheduleCalendarEvents = createServerFn(
       .selectFrom("customScheduleEvents")
       .where("scheduleId", "=", scheduleId)
       .selectAll()
+      .select(() => [sql<string[]>`days::text[]`.as("days")])
       .execute();
     return superjson.stringify([...courseEvents, ...customEvents]);
   },
@@ -58,7 +60,9 @@ export const getScheduleCalendarEventsQuery = (
 ): FetchQueryOptions<ScheduleCalendarEvent[]> => ({
   queryKey: ["schedule-events", scheduleId],
   queryFn: async () => {
-    const events = superjson.parse<BaseScheduleEvent[]>(await getScheduleCalendarEvents(scheduleId));
+    const events = superjson.parse<BaseScheduleEvent[]>(
+      await getScheduleCalendarEvents(scheduleId),
+    );
     if (events.length === 0) {
       return [];
     }

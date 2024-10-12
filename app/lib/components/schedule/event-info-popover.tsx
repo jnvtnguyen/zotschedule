@@ -44,15 +44,19 @@ export function EventInfoPopover({
           <p className="text-xs">{format(base.start!, "EEEE, MMMM d")}</p>
           <DotFilledIcon className="w-3 h-3" />
           <p className="text-xs">
-            {format(base.start!, "h:mm a")} - {format(base.end!, "h:mm a")}
+            {format(base.start!, "h:mm a")}
+            {base.end ? ` - ${format(base.end!, "h:mm a")}` : ""}
           </p>
         </div>
         {base.extendedProps.frequency && (
           <p className="text-xs">
             {FREQUENCY_TO_LABEL[base.extendedProps.frequency]}
-            {base.extendedProps.days?.length ? 
-              ` on ${base.extendedProps.days.map((day: string) => DAY_TO_LABEL[day]).join(", ")}` : ""}
-            {base.extendedProps.repeatsUntil ? ` until ${format(base.extendedProps.repeatsUntil, "EEEE, MMMM d")}` : ""}
+            {base.extendedProps.days?.length
+              ? ` on ${base.extendedProps.days.map((day: string) => DAY_TO_LABEL[day]).join(", ")}`
+              : ""}
+            {base.extendedProps.repeatsUntil
+              ? ` until ${format(base.extendedProps.repeatsUntil, "EEEE, MMMM d")}`
+              : ""}
           </p>
         )}
       </div>
@@ -62,7 +66,7 @@ export function EventInfoPopover({
             <p>
               Location: {base.extendedProps.building} {base.extendedProps.room}
             </p>
-            <p>Instructors: {event.info.section.instructors.join(", ")}</p> 
+            <p>Instructors: {event.info.section.instructors.join(", ")}</p>
           </div>
         )}
         <div className="flex flex-row justify-end items-center">

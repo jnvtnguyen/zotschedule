@@ -19,18 +19,20 @@ const add = createServerFn(
       if (exists) {
         throw new Error("Course already in schedule.");
       }
-      return superjson.stringify(await database
-        .insertInto("courseScheduleEvents")
-        .values({
-          scheduleId: event.scheduleId,
-          sectionCode: event.sectionCode,
-          term: event.term,
-          color: event.color,
-        })
-        .returningAll()
-        .executeTakeFirstOrThrow());
+      return superjson.stringify(
+        await database
+          .insertInto("courseScheduleEvents")
+          .values({
+            scheduleId: event.scheduleId,
+            sectionCode: event.sectionCode,
+            term: event.term,
+            color: event.color,
+          })
+          .returningAll()
+          .executeTakeFirstOrThrow(),
+      );
     }
-    return '';
+    return "";
   },
 );
 

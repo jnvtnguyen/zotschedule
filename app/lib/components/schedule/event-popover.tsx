@@ -41,9 +41,7 @@ export function EventPopover({
       offset(5),
       autoPlacement({
         crossAxis: true,
-        boundary: document.querySelector(
-          ".fc-scrollgrid-section-body",
-        ) as HTMLElement,
+        boundary: document.querySelector(".fc-scrollgrid") as HTMLElement,
       }),
     ],
     whileElementsMounted: autoUpdate,

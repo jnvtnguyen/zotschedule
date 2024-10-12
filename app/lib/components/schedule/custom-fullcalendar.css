@@ -28,3 +28,21 @@
 .fc-event {
   cursor: pointer;
 }
+
+.fc-theme-standard td {
+  border: 1px solid hsl(var(--border));
+}
+
+.fc-theme-standard th {
+  border: 1px solid hsl(var(--border));
+  border-top: none !important;
+  border-right: none !important;
+}
+
+.fc-scrollgrid {
+  border: none !important;
+}
+
+td[role="presentation"] {
+  border: none !important;
+}

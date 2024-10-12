@@ -1,7 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
 import { getSchedulesQuery, useSchedules } from "@/lib/hooks/use-schedules";
 import { getTermCalendarsQuery } from "@/lib/hooks/use-term-calendars";
 import { CreateScheduleDialog } from "@/lib/components/schedule/create-schedule-dialog";
@@ -62,20 +60,18 @@ function Schedule() {
   }
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <AuthUserContext.Provider value={createAuthUserStore(session.user)}>
-        {schedules.length === 0 ? (
-          <CreateScheduleDialog isOpen={true} isCloseable={false} />
-        ) : (
-          <ScheduleContext.Provider
-            value={createScheduleStore(
-              schedules.find((schedule) => schedule.isDefault),
-            )}
-          >
-            <ScheduleView user={session.user} />
-          </ScheduleContext.Provider>
-        )}
-      </AuthUserContext.Provider>
-    </LocalizationProvider>
+    <AuthUserContext.Provider value={createAuthUserStore(session.user)}>
+      {schedules.length === 0 ? (
+        <CreateScheduleDialog isOpen={true} isCloseable={false} />
+      ) : (
+        <ScheduleContext.Provider
+          value={createScheduleStore(
+            schedules.find((schedule) => schedule.isDefault),
+          )}
+        >
+          <ScheduleView user={session.user} />
+        </ScheduleContext.Provider>
+      )}
+    </AuthUserContext.Provider>
   );
 }

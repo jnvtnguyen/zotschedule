@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { addMonths, addWeeks, parse } from "date-fns";
 import { EventInput } from "@fullcalendar/core";
-import { Schedule as RSchedule, Rule } from "./rschedule";
 
 import { useScheduleCalendarEvents } from "@/lib/hooks/use-schedule-calendar-events";
 import { useTermCalendars } from "@/lib/hooks/use-term-calendars";
@@ -9,9 +8,16 @@ import { TERM_CODE_DICTIONARY } from "@/lib/uci/courses/types";
 import { WebSocMeeting } from "@/lib/uci/offerings/types";
 import { isCourseScheduleEvent } from "@/lib/uci/events/types";
 import { View } from "@/lib/hooks/use-schedule-calendar";
-import { CustomScheduleEventDay, CustomScheduleEventFrequency } from "@/lib/database/generated-types";
+import {
+  CustomScheduleEventDay,
+  CustomScheduleEventFrequency,
+} from "@/lib/database/generated-types";
+import { Rule } from "./rschedule";
 
-export const COMMON_DAYS_TO_RSCHEDULE_DAYS: Record<string, CustomScheduleEventDay> = {
+export const COMMON_DAYS_TO_RSCHEDULE_DAYS: Record<
+  string,
+  CustomScheduleEventDay
+> = {
   Su: CustomScheduleEventDay.SU,
   M: CustomScheduleEventDay.MO,
   Tu: CustomScheduleEventDay.TU,
@@ -31,15 +37,16 @@ export const RSCHEDULE_DAYS_TO_LABEL: Record<CustomScheduleEventDay, string> = {
   SA: "Saturday",
 };
 
-export const DATE_DAY_TO_RSCHEDULE_DAY: Record<number, CustomScheduleEventDay> = {
-  0: CustomScheduleEventDay.SU,
-  1: CustomScheduleEventDay.MO,
-  2: CustomScheduleEventDay.TU,
-  3: CustomScheduleEventDay.WE,
-  4: CustomScheduleEventDay.TH,
-  5: CustomScheduleEventDay.FR,
-  6: CustomScheduleEventDay.SA,
-};
+export const DATE_DAY_TO_RSCHEDULE_DAY: Record<number, CustomScheduleEventDay> =
+  {
+    0: CustomScheduleEventDay.SU,
+    1: CustomScheduleEventDay.MO,
+    2: CustomScheduleEventDay.TU,
+    3: CustomScheduleEventDay.WE,
+    4: CustomScheduleEventDay.TH,
+    5: CustomScheduleEventDay.FR,
+    6: CustomScheduleEventDay.SA,
+  };
 
 export const RSCHEDULE_DAYS_ORDER: CustomScheduleEventDay[] = [
   CustomScheduleEventDay.SU,
@@ -51,7 +58,17 @@ export const RSCHEDULE_DAYS_ORDER: CustomScheduleEventDay[] = [
   CustomScheduleEventDay.SA,
 ];
 
-export const getCustomScheduleEventDayFromMeeting = (meeting: WebSocMeeting) => {
+const RSCHEDULE_WEEKDAYS: CustomScheduleEventDay[] = [
+  CustomScheduleEventDay.MO,
+  CustomScheduleEventDay.TU,
+  CustomScheduleEventDay.WE,
+  CustomScheduleEventDay.TH,
+  CustomScheduleEventDay.FR,
+];
+
+export const getCustomScheduleEventDayFromMeeting = (
+  meeting: WebSocMeeting,
+) => {
   const days = meeting.days.match(/M|Tu|W|Th|F|Sa|Su/g);
   if (!days) {
     return [];
@@ -85,7 +102,7 @@ type RRule = {
   byMonthDay?: number[];
   byHourOfDay?: number[];
   byMinuteOfHour?: number[];
-}
+};
 
 const DAILY_REPEATABILITY = (date: Date): RRule => ({
   frequency: "DAILY",
@@ -102,6 +119,14 @@ const WEEKLY_REPEATABILITY = (date: Date): RRule => ({
   byMinuteOfHour: [date.getMinutes()],
 });
 
+const WEEKDAY_REPEATABILITY = (date: Date): RRule => ({
+  frequency: "WEEKLY",
+  interval: 1,
+  byDayOfWeek: RSCHEDULE_WEEKDAYS,
+  byHourOfDay: [date.getHours()],
+  byMinuteOfHour: [date.getMinutes()],
+});
+
 const MONTHLY_REPEATABILITY = (date: Date): RRule => ({
   frequency: "MONTHLY",
   interval: 1,
@@ -110,7 +135,11 @@ const MONTHLY_REPEATABILITY = (date: Date): RRule => ({
   byMinuteOfHour: [date.getMinutes()],
 });
 
-export const useCalendarEvents = (scheduleId: string, view: View, date: Date) => {
+export const useCalendarEvents = (
+  scheduleId: string,
+  view: View,
+  date: Date,
+) => {
   const events = useScheduleCalendarEvents(scheduleId);
   const terms = useTermCalendars();
 
@@ -158,31 +187,23 @@ export const useCalendarEvents = (scheduleId: string, view: View, date: Date) =>
           }
           const [start, end] = parseTimeRange(meeting.time);
           const range = {
-            begin: new RSchedule({
-              rrules: [
-                new Rule({
-                  start: term.instructionBegins,
-                  end: term.instructionEnds,
-                  // @ts-expect-error
-                  frequency: "WEEKLY",
-                  byHourOfDay: [start.getHours()],
-                  byMinuteOfHour: [start.getMinutes()],
-                  byDayOfWeek: days,
-                }),
-              ],
+            begin: new Rule({
+              start: term.instructionBegins,
+              end: term.instructionEnds,
+              // @ts-expect-error
+              frequency: "WEEKLY",
+              byHourOfDay: [start.getHours()],
+              byMinuteOfHour: [start.getMinutes()],
+              byDayOfWeek: days,
             }),
-            end: new RSchedule({
-              rrules: [
-                new Rule({
-                  start: term.instructionBegins,
-                  end: term.instructionEnds,
-                  // @ts-expect-error
-                  frequency: "WEEKLY",
-                  byHourOfDay: [end.getHours()],
-                  byMinuteOfHour: [end.getMinutes()],
-                  byDayOfWeek: days,
-                }),
-              ],
+            end: new Rule({
+              start: term.instructionBegins,
+              end: term.instructionEnds,
+              // @ts-expect-error
+              frequency: "WEEKLY",
+              byHourOfDay: [end.getHours()],
+              byMinuteOfHour: [end.getMinutes()],
+              byDayOfWeek: days,
             }),
           };
           const occurences = {
@@ -233,47 +254,59 @@ export const useCalendarEvents = (scheduleId: string, view: View, date: Date) =>
           } = {
             begin: {
               start: meeting.start,
-              end: end!
+              end: end!,
             },
             end: {
               start: meeting.start,
-              end: end!
+              end: end!,
             },
-            days: []
-          }
-           
+            days: [],
+          };
+
           if (meeting.repeatability === "DAILY") {
             rules.begin = {
               ...rules.begin,
-              ...DAILY_REPEATABILITY(meeting.start)
-            }
+              ...DAILY_REPEATABILITY(meeting.start),
+            };
             rules.end = {
               ...rules.end,
-              ...DAILY_REPEATABILITY(meeting.start)
-            }
+              ...DAILY_REPEATABILITY(meeting.end),
+            };
           }
 
           if (meeting.repeatability === "WEEKLY") {
             rules.begin = {
               ...rules.begin,
-              ...WEEKLY_REPEATABILITY(meeting.start)
-            }
+              ...WEEKLY_REPEATABILITY(meeting.start),
+            };
             rules.end = {
               ...rules.end,
-              ...WEEKLY_REPEATABILITY(meeting.start)
-            }
+              ...WEEKLY_REPEATABILITY(meeting.end),
+            };
             rules.days.push(DATE_DAY_TO_RSCHEDULE_DAY[meeting.start.getDay()]);
+          }
+
+          if (meeting.repeatability === "WEEKDAY") {
+            rules.begin = {
+              ...rules.begin,
+              ...WEEKDAY_REPEATABILITY(meeting.start),
+            };
+            rules.end = {
+              ...rules.end,
+              ...WEEKDAY_REPEATABILITY(meeting.end),
+            };
+            rules.days.push(...RSCHEDULE_WEEKDAYS);
           }
 
           if (meeting.repeatability === "MONTHLY") {
             rules.begin = {
               ...rules.begin,
-              ...MONTHLY_REPEATABILITY(meeting.start)
-            }
+              ...MONTHLY_REPEATABILITY(meeting.start),
+            };
             rules.end = {
               ...rules.end,
-              ...MONTHLY_REPEATABILITY(meeting.start)
-            }
+              ...MONTHLY_REPEATABILITY(meeting.end),
+            };
           }
 
           if (meeting.repeatability === "CUSTOM") {
@@ -299,16 +332,8 @@ export const useCalendarEvents = (scheduleId: string, view: View, date: Date) =>
           }
 
           const range = {
-            begin: new RSchedule({
-              rrules: [
-                new Rule(rules.begin),
-              ],
-            }),
-            end: new RSchedule({
-              rrules: [
-                new Rule(rules.end),
-              ],
-            }),
+            begin: new Rule(rules.begin),
+            end: new Rule(rules.end),
           };
 
           const occurences = {
@@ -330,7 +355,6 @@ export const useCalendarEvents = (scheduleId: string, view: View, date: Date) =>
             };
           });
         }
-
         return {
           title: meeting.title,
           start: meeting.start,

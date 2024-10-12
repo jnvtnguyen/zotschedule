@@ -32,7 +32,6 @@ export function NewEventPopover({
 
   const onEventChange = ({
     start,
-    end,
     ...rest
   }: Partial<CustomScheduleCalendarEvent>) => {
     if (start) {
@@ -58,22 +57,6 @@ export function NewEventPopover({
       } else if (view === "dayGridMonth" && !isSameMonth(date, start)) {
         setDate(start);
       }
-    }
-    if (end) {
-      queryClient.setQueryData(
-        ["schedule-events", schedule.id],
-        (events: ScheduleCalendarEvent[]) => {
-          return events.map((e) => {
-            if (e.id === "new") {
-              return {
-                ...e,
-                end,
-              };
-            }
-            return e;
-          });
-        },
-      );
     }
     if (rest) {
       queryClient.setQueryData(

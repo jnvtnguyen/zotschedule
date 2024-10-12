@@ -24,7 +24,10 @@ import { Label } from "@/lib/components/ui/label";
 import { Button } from "@/lib/components/ui/button";
 import { DatePicker } from "@/lib/components/common/date-picker";
 import { cn } from "@/lib/utils/style";
-import { CustomScheduleEventDay, CustomScheduleEventFrequency } from "@/lib/database/generated-types";
+import {
+  CustomScheduleEventDay,
+  CustomScheduleEventFrequency,
+} from "@/lib/database/generated-types";
 import {
   COMMON_DAYS_TO_RSCHEDULE_DAYS,
   DATE_DAY_TO_RSCHEDULE_DAY,
@@ -46,7 +49,10 @@ const dailyRecurrenceFormSchema = z.object({
 });
 
 const customRecurrenceFormSchema = z
-  .discriminatedUnion("frequency", [weeklyRecurrenceFormSchema, dailyRecurrenceFormSchema])
+  .discriminatedUnion("frequency", [
+    weeklyRecurrenceFormSchema,
+    dailyRecurrenceFormSchema,
+  ])
   .and(baseCustomRecurrenceFormSchema);
 
 export type CustomRecurrence = z.infer<typeof customRecurrenceFormSchema>;
@@ -68,7 +74,10 @@ export function CustomRecurrenceForm({
       frequency: data?.frequency || CustomScheduleEventFrequency.WEEKLY,
       interval: data?.interval || 1,
       ends: data?.ends || addMonths(start, 1),
-      days: data?.frequency === CustomScheduleEventFrequency.WEEKLY ? (data.days || [DATE_DAY_TO_RSCHEDULE_DAY[start.getDay()]]) : [],
+      days:
+        data?.frequency === CustomScheduleEventFrequency.WEEKLY
+          ? data.days || [DATE_DAY_TO_RSCHEDULE_DAY[start.getDay()]]
+          : [],
     },
   });
   const [isEnding, setIsEnding] = useState<"never" | "on">(

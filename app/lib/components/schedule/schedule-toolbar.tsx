@@ -1,7 +1,8 @@
-import { SchedulesDropdown } from "./schedules-dropdown";
-import { ScheduleTimePicker } from "./schedule-time-picker";
 import { useSchedules } from "@/lib/hooks/use-schedules";
 import { useAuthUser } from "@/lib/hooks/use-auth-user";
+import { SchedulesDropdown } from "./schedules-dropdown";
+import { ScheduleTimePicker } from "./schedule-time-picker";
+import { ScheduleNavigation } from "./schedule-navigation";
 
 export function ScheduleToolbar() {
   const user = useAuthUser((state) => state.user);
@@ -17,7 +18,10 @@ export function ScheduleToolbar() {
 
   return (
     <div className="flex flex-row w-full justify-between">
-      <SchedulesDropdown schedules={schedules} />
+      <div className="flex flex-row gap-2 items-center">
+        <SchedulesDropdown schedules={schedules} />
+        <ScheduleNavigation />
+      </div>
       <ScheduleTimePicker />
     </div>
   );

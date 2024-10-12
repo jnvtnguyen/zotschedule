@@ -4,10 +4,12 @@ import { useForm } from "react-hook-form";
 import { format, intervalToDuration, add } from "date-fns";
 import { ArrowRightIcon } from "@radix-ui/react-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { TimeField } from "@mui/x-date-pickers";
+import { Time } from "@internationalized/date";
 import { EventImpl } from "@fullcalendar/core/internal";
 import { createServerFn } from "@tanstack/start";
 import { useQueryClient } from "@tanstack/react-query";
+import { UTCDate } from "@date-fns/utc";
+import superjson from "superjson";
 
 import { database } from "@/lib/database";
 import { Schedule } from "@/lib/database/types";
@@ -18,6 +20,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/lib/components/ui/form";
+import { TimePicker } from "@/lib/components/common/time-picker";
 import { Input } from "@/lib/components/ui/input";
 import { Button } from "@/lib/components/ui/button";
 import { EventColorPicker } from "./schedule-actions-panel/event/event-color-picker";
@@ -32,51 +35,62 @@ import {
 } from "@/lib/components/ui/select";
 import { DatePicker } from "@/lib/components/common/date-picker";
 import { CustomScheduleCalendarEvent } from "@/lib/hooks/use-schedule-calendar-events";
-import { FREQUENCY_TO_LABEL } from '@/lib/uci/events/types';
+import { FREQUENCY_TO_LABEL } from "@/lib/uci/events/types";
 import { CustomScheduleEventRepeatability } from "@/lib/database/generated-types";
 import { CustomRecurrenceDialog } from "./custom-recurrence-dialog";
 import { CustomRecurrence } from "./custom-recurrence-form";
-import { RSCHEDULE_DAYS_ORDER, RSCHEDULE_DAYS_TO_LABEL } from './use-calendar-events';
+import {
+  RSCHEDULE_DAYS_ORDER,
+  RSCHEDULE_DAYS_TO_LABEL,
+} from "./use-calendar-events";
 
 const newEventFormSchema = z.object({
   color: z.string().min(1, { message: "A event color is required." }),
   title: z.string().optional(),
   start: z.date({ required_error: "A event start date is required." }),
   end: z.date({ required_error: "A event end date is required." }),
-  repeatability: z.nativeEnum(CustomScheduleEventRepeatability).or(z.literal("new-custom")),
+  times: z.object({
+    start: z.object({
+      hour: z.number(),
+      minute: z.number(),
+    }),
+    end: z.object({
+      hour: z.number(),
+      minute: z.number(),
+    })
+  }),
+  repeatability: z
+    .nativeEnum(CustomScheduleEventRepeatability)
+    .or(z.literal("new-custom")),
 });
 
-const save = createServerFn(
-  "POST",
-  async ({
-    data,
-    schedule,
-    customRecurrence
-  }: {
+const save = createServerFn("POST", async (payload: string) => {
+  const { data, schedule, custom } = superjson.parse<{
     data: z.infer<typeof newEventFormSchema>;
     schedule: Schedule;
-    customRecurrence?: CustomRecurrence;
-  }) => {
-    await database
-      .insertInto("customScheduleEvents")
-      .values({
-        scheduleId: schedule.id,
-        color: data.color,
-        title: data.title || "(No Title)",
-        description: "",
-        start: data.start,
-        end: data.end,
-        repeatability: data.repeatability as CustomScheduleEventRepeatability,
-        frequency: customRecurrence?.frequency,
-        interval: customRecurrence?.interval,
-        days: customRecurrence?.frequency === "WEEKLY" ? customRecurrence.days : [],
-        repeatUntil: customRecurrence?.ends,
-        months: [],
-        weeks: []
-      })
-      .executeTakeFirstOrThrow();
-  },
-);
+    custom?: CustomRecurrence;
+  }>(payload);
+
+  await database
+    .insertInto("customScheduleEvents")
+    .values({
+      scheduleId: schedule.id,
+      color: data.color,
+      title: data.title || "(No Title)",
+      description: "",
+      start: data.start,
+      end: data.end,
+      repeatability: data.repeatability as CustomScheduleEventRepeatability,
+      frequency: custom?.frequency,
+      interval: custom?.interval,
+      days:
+        custom?.frequency === "WEEKLY" ? custom.days : [],
+      repeatUntil: custom?.ends,
+      months: [],
+      weeks: [],
+    })
+    .executeTakeFirstOrThrow();
+});
 
 type NewEventFormProps = {
   event: EventImpl;
@@ -99,18 +113,23 @@ export function NewEventForm({
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [isCustomRecurrenceOpen, setIsCustomRecurrenceOpen] = useState(false);
-  const [customRecurrence, setCustomRecurrence] = useState<CustomRecurrence | undefined>(
-    event.extendedProps.event.repeatability === CustomScheduleEventRepeatability.CUSTOM ?
-    {
-      frequency: event.extendedProps.event.frequency,
-      interval: event.extendedProps.event.interval,
-      days: event.extendedProps.event.days,
-      ends: event.extendedProps.event.ends
-    } : undefined
+  const [custom, setCustom] = useState<
+    CustomRecurrence | undefined
+  >(
+    event.extendedProps.event.repeatability ===
+      CustomScheduleEventRepeatability.CUSTOM
+      ? {
+          frequency: event.extendedProps.event.frequency,
+          interval: event.extendedProps.event.interval,
+          days: event.extendedProps.event.days,
+          ends: event.extendedProps.event.ends,
+        }
+      : undefined,
   );
-  const [savedRepeatability, setSavedRepeatability] = useState<CustomScheduleEventRepeatability>(
-    CustomScheduleEventRepeatability.NONE,
-  );
+  const [savedRepeatability, setSavedRepeatability] =
+    useState<CustomScheduleEventRepeatability>(
+      CustomScheduleEventRepeatability.NONE,
+    );
 
   const form = useForm<z.infer<typeof newEventFormSchema>>({
     resolver: zodResolver(newEventFormSchema),
@@ -119,7 +138,17 @@ export function NewEventForm({
       title: event.extendedProps.event.title,
       start: event.extendedProps.event.start,
       end: event.extendedProps.event.end,
-      repeatability: event.extendedProps.event.repeatability
+      repeatability: event.extendedProps.event.repeatability,
+      times: {
+        start: {
+          hour: event.extendedProps.event.start.getHours(),
+          minute: event.extendedProps.event.start.getMinutes(),
+        },
+        end: {
+          hour: event.extendedProps.event.end.getHours(),
+          minute: event.extendedProps.event.end.getMinutes(),
+        }
+      },
     },
   });
 
@@ -141,45 +170,52 @@ export function NewEventForm({
       {
         label: "Every weekday (Monday to Friday)",
         value: CustomScheduleEventRepeatability.WEEKDAY,
-      }, 
+      },
     ];
 
-    if (customRecurrence) {
-      let label = FREQUENCY_TO_LABEL[customRecurrence.frequency];
-      if (customRecurrence.frequency === "WEEKLY") {
-        label = `${label} on ${customRecurrence.days
-          .sort((a, b) => RSCHEDULE_DAYS_ORDER.indexOf(a) - RSCHEDULE_DAYS_ORDER.indexOf(b))
+    if (custom) {
+      let label = FREQUENCY_TO_LABEL[custom.frequency];
+      if (custom.frequency === "WEEKLY") {
+        label = `${label} on ${custom.days
+          .sort(
+            (a, b) =>
+              RSCHEDULE_DAYS_ORDER.indexOf(a) - RSCHEDULE_DAYS_ORDER.indexOf(b),
+          )
           .map((day) => RSCHEDULE_DAYS_TO_LABEL[day])
           .join(", ")}`;
       }
 
-      if (customRecurrence.ends) {
-        label = `${label}, until ${format(customRecurrence.ends, "MMMM d, yyyy")}`;
+      if (custom.ends) {
+        label = `${label}, until ${format(custom.ends, "MMMM d, yyyy")}`;
       }
 
       options.push({
         label: label,
-        value: CustomScheduleEventRepeatability.CUSTOM
+        value: CustomScheduleEventRepeatability.CUSTOM,
       });
     }
 
     options.push({
       label: "Custom",
-      value: "new-custom"
+      value: "new-custom",
     });
 
     return options;
-  }, [event.start, customRecurrence]);
+  }, [event.start, custom]);
 
   useEffect(() => {
-    if (customRecurrence) {
+    if (custom) {
       form.setValue("repeatability", CustomScheduleEventRepeatability.CUSTOM);
     }
-  }, [customRecurrence]);
+  }, [custom]);
 
   useEffect(() => {
-    if (repeatability !== CustomScheduleEventRepeatability.CUSTOM && repeatability !== "new-custom" && customRecurrence) {
-      setCustomRecurrence(undefined);
+    if (
+      repeatability !== CustomScheduleEventRepeatability.CUSTOM &&
+      repeatability !== "new-custom" &&
+      custom
+    ) {
+      setCustom(undefined);
     }
     if (repeatability === "new-custom") {
       return;
@@ -188,26 +224,52 @@ export function NewEventForm({
     onEventChange({
       repeatability,
     });
-    if (repeatability === CustomScheduleEventRepeatability.CUSTOM && customRecurrence) {
+    if (
+      repeatability === CustomScheduleEventRepeatability.CUSTOM &&
+      custom
+    ) {
       onEventChange({
-        ...customRecurrence,
+        ...custom,
         months: [],
-        weeks: []
+        weeks: [],
       });
     }
   }, [repeatability]);
 
   useEffect(() => {
     form.setValue("start", event.extendedProps.event.start);
+    form.setValue("times.start", {
+      hour: event.extendedProps.event.start.getHours(),
+      minute: event.extendedProps.event.start.getMinutes(),
+    });
   }, [event.extendedProps.event.start]);
 
   useEffect(() => {
     form.setValue("end", event.extendedProps.event.end);
+    form.setValue("times.end", {
+      hour: event.extendedProps.event.end.getHours(),
+      minute: event.extendedProps.event.end.getMinutes(),
+    });
   }, [event.extendedProps.event.end]);
 
   const onSubmit = async (data: z.infer<typeof newEventFormSchema>) => {
     try {
-      await save({ data, schedule, customRecurrence });
+      await save(
+        superjson.stringify({
+          data: {
+            ...data,
+            start: new UTCDate(data.start),
+            end: new UTCDate(data.end),
+          },
+          schedule,
+          custom: {
+            ...custom,
+            ends: custom?.ends
+              ? new UTCDate(custom.ends)
+              : undefined,
+          },
+        }),
+      );
       await queryClient.invalidateQueries({
         queryKey: ["schedule-events", schedule.id],
       });
@@ -296,16 +358,16 @@ export function NewEventForm({
                         date.getFullYear(),
                         date.getMonth(),
                         date.getDate(),
-                        event.start?.getHours(),
-                        event.start?.getMinutes(),
+                        event.start!.getHours(),
+                        event.start!.getMinutes(),
                       );
-                      const end = new Date(
+                      const end = event.end ? new Date(
                         date.getFullYear(),
                         date.getMonth(),
                         date.getDate(),
-                        event.end?.getHours(),
-                        event.end?.getMinutes(),
-                      );
+                        event.end.getHours(),
+                        event.end.getMinutes(),
+                      ) : start;
                       field.onChange(start);
                       onEventChange({
                         start,
@@ -321,32 +383,71 @@ export function NewEventForm({
           <div className="flex flex-row gap-1 items-center">
             <FormField
               control={form.control}
-              name="start"
+              name="times.start"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormControl>
-                    <TimeField
-                      slots={{
-                        textField: CustomTimeTextField,
-                      }}
-                      value={field.value}
-                      onChange={(date) => {
-                        field.onChange(date);
+                    <TimePicker
+                      value={new Time(field.value.hour, field.value.minute)}
+                      onChange={(time) => {
+                        field.onChange({
+                          hour: time?.hour,
+                          minute: time?.minute,
+                        });
                       }}
                       onBlur={() => {
-                        if (!field.value || isNaN(field.value.getTime())) {
-                          form.resetField("start");
+                        if (!field.value) {
+                          form.setValue("times.start", {
+                            hour: event.start!.getHours(),
+                            minute: event.start!.getMinutes(),
+                          });
                           return;
                         }
-                        onEventChange({
-                          start: field.value,
-                          end: add(
-                            field.value,
-                            intervalToDuration({
-                              start: event.start!,
-                              end: event.end!,
-                            }),
+                        const end = event.end ? new Date(
+                          event.start!.getFullYear(),
+                          event.start!.getMonth(),
+                          event.start!.getDate(),
+                          event.end.getHours(),
+                          event.end.getMinutes(),
+                        ) : event.start!;
+                        
+                        let added = add(
+                          new Date(
+                            event.start!.getFullYear(),
+                            event.start!.getMonth(),
+                            event.start!.getDate(),
+                            field.value.hour,
+                            field.value.minute,
                           ),
+                          intervalToDuration({
+                            start: event.start!,
+                            end: end
+                          }),
+                        );
+                        if (added.getDate() !== event.start!.getDate()) {
+                          added = new Date(
+                            event.start!.getFullYear(),
+                            event.start!.getMonth(),
+                            event.start!.getDate(),
+                            23,
+                            59,
+                          );
+                        }
+                        onEventChange({
+                          start: new Date(
+                            event.start!.getFullYear(),
+                            event.start!.getMonth(),
+                            event.start!.getDate(),
+                            field.value.hour,
+                            field.value.minute,
+                          ),
+                          end: new Date(
+                            event.start!.getFullYear(),
+                            event.start!.getMonth(),
+                            event.start!.getDate(),
+                            added.getHours(),
+                            added.getMinutes(),
+                          )
                         });
                       }}
                     />
@@ -355,28 +456,35 @@ export function NewEventForm({
                 </FormItem>
               )}
             />
-            <ArrowRightIcon className="h-6 w-6" />
+            <ArrowRightIcon className="h-4 w-4" />
             <FormField
               control={form.control}
-              name="end"
+              name="times.end"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormControl>
-                    <TimeField
-                      slots={{
-                        textField: CustomTimeTextField,
-                      }}
-                      value={field.value}
-                      onChange={(date) => {
-                        field.onChange(date);
+                    <TimePicker
+                      value={new Time(field.value.hour, field.value.minute)}
+                      onChange={(time) => {
+                        field.onChange({
+                          hour: time.hour,
+                          minute: time.minute,
+                        });
                       }}
                       onBlur={() => {
-                        if (!field.value || isNaN(field.value.getTime())) {
-                          form.resetField("end");
+                        const end = new Date(
+                          event.start!.getFullYear(),
+                          event.start!.getMonth(),
+                          event.start!.getDate(),
+                          field.value.hour,
+                          field.value.minute,
+                        );
+                        if (!field.value || end < event.start!) {
+                          form.setValue("end", event.end!);
                           return;
                         }
                         onEventChange({
-                          end: field.value,
+                          end: end
                         });
                       }}
                     />
@@ -394,7 +502,9 @@ export function NewEventForm({
                 <FormControl>
                   <Select
                     value={field.value}
-                    onValueChange={(v: CustomScheduleEventRepeatability | "new-custom") => {
+                    onValueChange={(
+                      v: CustomScheduleEventRepeatability | "new-custom",
+                    ) => {
                       field.onChange(v);
                       if (v === "new-custom") {
                         setIsCustomRecurrenceOpen(true);
@@ -408,7 +518,10 @@ export function NewEventForm({
                     <SelectContent>
                       <SelectGroup>
                         {repeatabilities.map((option) => (
-                          <SelectItem value={option.value} key={`repeatability-${option.value}`}>
+                          <SelectItem
+                            value={option.value}
+                            key={`repeatability-${option.value}`}
+                          >
                             {option.label}
                           </SelectItem>
                         ))}
@@ -430,7 +543,7 @@ export function NewEventForm({
       </Form>
       <CustomRecurrenceDialog
         start={event.start!}
-        data={customRecurrence}
+        data={custom}
         open={isCustomRecurrenceOpen}
         onClose={(data?: CustomRecurrence) => {
           setIsCustomRecurrenceOpen(false);
@@ -438,7 +551,7 @@ export function NewEventForm({
             form.setValue("repeatability", savedRepeatability);
             return;
           }
-          setCustomRecurrence(data);
+          setCustom(data);
         }}
       />
     </>
@@ -462,13 +575,14 @@ function CustomTimeTextField(props: any) {
     <Input
       id={id}
       ref={ref}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") {
-          onBlur();
-        }
-        onKeyDown(e);
-      }}
       onBlur={onBlur}
+      onKeyDown={(e) => {
+        onKeyDown(e);
+        if (e.key === "Enter") {
+          e.preventDefault();
+          onBlur(e);
+        }
+      }}
       {...inputProps}
       {...other}
     />

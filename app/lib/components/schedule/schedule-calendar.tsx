@@ -3,16 +3,17 @@ import { useQueryClient } from "@tanstack/react-query";
 import FullCalendar from "@fullcalendar/react";
 import {
   DateSelectArg,
+  DayHeaderContentArg,
   EventClickArg,
   EventContentArg,
+  SlotLabelContentArg,
 } from "@fullcalendar/core";
 import { EventImpl } from "@fullcalendar/core/internal";
 import {
   addHours,
-  addMinutes,
   format,
+  isEqual,
   roundToNearestHours,
-  subMinutes,
 } from "date-fns";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -81,21 +82,27 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   };
 
   useEffect(() => {
-    if (ref.current) {
-      ref.current.getApi().changeView(view);
-    }
+    queueMicrotask(() => {
+      if (ref.current) {
+        ref.current.getApi().changeView(view);
+      }
+    });
   }, [view]);
 
   useEffect(() => {
-    if (ref.current) {
-      ref.current.getApi().gotoDate(date);
-    }
+    queueMicrotask(() => {
+      if (ref.current) {
+        ref.current.getApi().gotoDate(date);
+      }
+    });
   }, [date]);
 
   useEffect(() => {
-    if (ref.current) {
-      ref.current.getApi().updateSize();
-    }
+    queueMicrotask(() => {
+      if (ref.current) {
+        ref.current.getApi().updateSize();
+      }
+    });
   }, [width]);
 
   const onSelect = (info: DateSelectArg) => {
@@ -126,11 +133,11 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
       ["schedule-events", schedule.id],
       (events: ScheduleEvent[]) => {
         return events.map((e) => {
-          if (e.id === event.id) {
+          if (e.id === event.id && !isCourseScheduleCalendarEvent(event)) {
             return {
               ...e,
               start: info.event.start,
-              end: info.event.end,
+              end: isEqual(event.start, event.end) ? info.event.start : info.event.end,
             };
           }
           return e;
@@ -158,11 +165,15 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
         events={events}
         allDaySlot={false}
         headerToolbar={false}
-        slotMinTime={"02:00:00"}
-        slotMaxTime={"25:00:00"}
         eventContent={EventContent}
         weekends={showWeekends}
         selectMinDistance={5}
+        slotMinTime={{
+          hours: 2
+        }}
+        slotMaxTime={{
+          hours: 26
+        }}
         slotDuration={{
           hours: 1,
         }}
@@ -170,23 +181,6 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
           minutes: 15,
         }}
         expandRows={true}
-        slotLabelFormat={{
-          hour: "numeric",
-          minute: "2-digit",
-          omitZeroMinute: false,
-          meridiem: "short",
-        }}
-        dayHeaderFormat={{
-          weekday: "short",
-          day: "2-digit",
-          omitCommas: true,
-        }}
-        eventTimeFormat={{
-          hour: "numeric",
-          minute: "2-digit",
-          omitZeroMinute: false,
-          meridiem: "short",
-        }}
         selectable={!anchor}
         editable={true}
         droppable={true}
@@ -227,6 +221,8 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
             setSelected(info.event);
           }
         }}
+        dayHeaderContent={DayHeaderContent}
+        slotLabelContent={SlotLabelContent}
       />
       {anchor && selected && isNewEvent && (
         <NewEventPopover
@@ -248,7 +244,21 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   );
 }
 
+function SlotLabelContent(props: SlotLabelContentArg) {
+  return <p className="text-[0.8rem]">{format(props.date, "hh:mm a")}</p>;
+}
+
+function DayHeaderContent(props: DayHeaderContentArg) {
+  return (
+    <div className="flex flex-col items-center">
+      <p className="text-[0.8rem]">{format(props.date, "EEEE")}</p>
+      <p className="text-[0.8rem]">{format(props.date, "d")}</p>
+    </div>
+  );
+}
+
 function EventContent(props: EventContentArg) {
+  const base = props.event;
   const extended = props.event.extendedProps;
   const event = extended.event as ScheduleCalendarEvent;
 
@@ -262,14 +272,15 @@ function EventContent(props: EventContentArg) {
           <p>{event.info.section.type}</p>
         </div>
         <p className="text-xs">
-          {format(props.event.start!, "hh:mm a")} - {format(props.event.end!, "hh:mm a")}, {extended.building}{" "}
+          {format(base.start!, "hh:mm a")} -{" "}
+          {format(base.end!, "hh:mm a")}, {extended.building}{" "}
           {extended.room}
         </p>
       </div>
     );
   }
 
-  const height = props.event.extendedProps.height;
+  const height = extended.height;
   return (
     <div
       className={cn("flex flex-col", {
@@ -280,7 +291,8 @@ function EventContent(props: EventContentArg) {
         {event.title === "" ? "(No Title)" : event.title}
       </p>
       <p className="text-xs">
-        {format(props.event.start!, "hh:mm a")} - {format(props.event.end!, "hh:mm a")}
+        {format(base.start!, "hh:mm a")}
+        {base.end ? ` - ${format(base.end, "hh:mm a")}` : ""}
       </p>
     </div>
   );
