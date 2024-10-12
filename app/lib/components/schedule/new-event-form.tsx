@@ -10,6 +10,7 @@ import { createServerFn } from "@tanstack/start";
 import { useQueryClient } from "@tanstack/react-query";
 import { UTCDate } from "@date-fns/utc";
 import superjson from "superjson";
+import { Frequency } from "rrule";
 
 import { database } from "@/lib/database";
 import { Schedule } from "@/lib/database/types";
@@ -40,7 +41,6 @@ import { CustomScheduleEventRepeatability } from "@/lib/database/generated-types
 import { CustomRecurrenceDialog } from "./custom-recurrence-dialog";
 import { CustomRecurrence } from "./custom-recurrence-form";
 import {
-  RSCHEDULE_DAYS_ORDER,
   RSCHEDULE_DAYS_TO_LABEL,
 } from "./use-calendar-events";
 
@@ -84,8 +84,8 @@ const save = createServerFn("POST", async (payload: string) => {
       frequency: custom?.frequency,
       interval: custom?.interval,
       days:
-        custom?.frequency === "WEEKLY" ? custom.days : [],
-      repeatUntil: custom?.ends,
+        custom?.frequency === Frequency.WEEKLY ? custom.days : [],
+      until: custom?.ends,
       months: [],
       weeks: [],
     })
@@ -175,11 +175,11 @@ export function NewEventForm({
 
     if (custom) {
       let label = FREQUENCY_TO_LABEL[custom.frequency];
-      if (custom.frequency === "WEEKLY") {
+      if (custom.frequency === Frequency.WEEKLY) {
         label = `${label} on ${custom.days
           .sort(
             (a, b) =>
-              RSCHEDULE_DAYS_ORDER.indexOf(a) - RSCHEDULE_DAYS_ORDER.indexOf(b),
+              a - b
           )
           .map((day) => RSCHEDULE_DAYS_TO_LABEL[day])
           .join(", ")}`;

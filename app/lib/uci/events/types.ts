@@ -3,6 +3,7 @@ import {
   NewScheduleEvent,
   ScheduleEvent,
 } from "@/lib/database/types";
+import { Frequency } from "rrule";
 
 export const DEFAULT_EVENT_COLOR = "#255799";
 
@@ -29,20 +30,12 @@ export const isCourseScheduleEvent = (
   return "sectionCode" in event;
 };
 
-export const FREQUENCY_TO_LABEL: Record<string, string> = {
-  DAILY: "Daily",
-  WEEKLY: "Weekly",
-  BIWEEKLY: "Biweekly",
-  MONTHLY: "Monthly",
-  YEARLY: "Yearly",
-};
-
-export const DAY_TO_LABEL: Record<string, string> = {
-  MO: "Monday",
-  TU: "Tuesday",
-  WE: "Wednesday",
-  TH: "Thursday",
-  FR: "Friday",
-  SA: "Saturday",
-  SU: "Sunday",
+export const FREQUENCY_TO_LABEL: Record<Frequency, string> = {
+  [Frequency.SECONDLY]: "Secondly",
+  [Frequency.MINUTELY]: "Minutely",
+  [Frequency.HOURLY]: "Hourly",
+  [Frequency.DAILY]: "Daily",
+  [Frequency.WEEKLY]: "Weekly",
+  [Frequency.MONTHLY]: "Monthly",
+  [Frequency.YEARLY]: "Yearly",
 };

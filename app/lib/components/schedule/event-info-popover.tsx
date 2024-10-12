@@ -1,8 +1,9 @@
 import { format } from "date-fns";
 import { EventImpl } from "@fullcalendar/core/internal";
 import { DotFilledIcon } from "@radix-ui/react-icons";
+import { Frequency } from "rrule";
 
-import { FREQUENCY_TO_LABEL, DAY_TO_LABEL } from "@/lib/uci/events/types";
+import { FREQUENCY_TO_LABEL } from "@/lib/uci/events/types";
 import {
   isCourseScheduleCalendarEvent,
   ScheduleCalendarEvent,
@@ -11,6 +12,7 @@ import { SECTION_TYPE_TO_LABEL } from "@/lib/uci/offerings/types";
 import { EventPopover, EventPopoverProps } from "./event-popover";
 import { EventColorPicker } from "./schedule-actions-panel/event/event-color-picker";
 import { RemoveEventButton } from "./schedule-actions-panel/event/remove-event-button";
+import { RSCHEDULE_DAYS_TO_LABEL } from "./use-calendar-events";
 
 export type EventInfoPopoverProps = Omit<
   EventPopoverProps,
@@ -50,9 +52,9 @@ export function EventInfoPopover({
         </div>
         {base.extendedProps.frequency && (
           <p className="text-xs">
-            {FREQUENCY_TO_LABEL[base.extendedProps.frequency]}
+            {FREQUENCY_TO_LABEL[base.extendedProps.frequency as Frequency]}
             {base.extendedProps.days?.length
-              ? ` on ${base.extendedProps.days.map((day: string) => DAY_TO_LABEL[day]).join(", ")}`
+              ? ` on ${base.extendedProps.days.map((day: number) => RSCHEDULE_DAYS_TO_LABEL[day]).join(", ")}`
               : ""}
             {base.extendedProps.repeatsUntil
               ? ` until ${format(base.extendedProps.repeatsUntil, "EEEE, MMMM d")}`

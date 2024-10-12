@@ -8,62 +8,37 @@ import { TERM_CODE_DICTIONARY } from "@/lib/uci/courses/types";
 import { WebSocMeeting } from "@/lib/uci/offerings/types";
 import { isCourseScheduleEvent } from "@/lib/uci/events/types";
 import { View } from "@/lib/hooks/use-schedule-calendar";
-import {
-  CustomScheduleEventDay,
-  CustomScheduleEventFrequency,
-} from "@/lib/database/generated-types";
-import { Rule } from "./rschedule";
+import { Frequency, RRule } from "rrule";
 
 export const COMMON_DAYS_TO_RSCHEDULE_DAYS: Record<
   string,
-  CustomScheduleEventDay
+  number
 > = {
-  Su: CustomScheduleEventDay.SU,
-  M: CustomScheduleEventDay.MO,
-  Tu: CustomScheduleEventDay.TU,
-  W: CustomScheduleEventDay.WE,
-  Th: CustomScheduleEventDay.TH,
-  F: CustomScheduleEventDay.FR,
-  Sa: CustomScheduleEventDay.SA,
+  Su: 0,
+  M: 1,
+  Tu: 2,
+  W: 3,
+  Th: 4,
+  F: 5,
+  Sa: 6,
 };
 
-export const RSCHEDULE_DAYS_TO_LABEL: Record<CustomScheduleEventDay, string> = {
-  SU: "Sunday",
-  MO: "Monday",
-  TU: "Tuesday",
-  WE: "Wednesday",
-  TH: "Thursday",
-  FR: "Friday",
-  SA: "Saturday",
+export const RSCHEDULE_DAYS_TO_LABEL: Record<number, string> = {
+  0: "Sunday",
+  1: "Monday",
+  2: "Tuesday",
+  3: "Wednesday",
+  4: "Thursday",
+  5: "Friday",
+  6: "Saturday",
 };
 
-export const DATE_DAY_TO_RSCHEDULE_DAY: Record<number, CustomScheduleEventDay> =
-  {
-    0: CustomScheduleEventDay.SU,
-    1: CustomScheduleEventDay.MO,
-    2: CustomScheduleEventDay.TU,
-    3: CustomScheduleEventDay.WE,
-    4: CustomScheduleEventDay.TH,
-    5: CustomScheduleEventDay.FR,
-    6: CustomScheduleEventDay.SA,
-  };
-
-export const RSCHEDULE_DAYS_ORDER: CustomScheduleEventDay[] = [
-  CustomScheduleEventDay.SU,
-  CustomScheduleEventDay.MO,
-  CustomScheduleEventDay.TU,
-  CustomScheduleEventDay.WE,
-  CustomScheduleEventDay.TH,
-  CustomScheduleEventDay.FR,
-  CustomScheduleEventDay.SA,
-];
-
-const RSCHEDULE_WEEKDAYS: CustomScheduleEventDay[] = [
-  CustomScheduleEventDay.MO,
-  CustomScheduleEventDay.TU,
-  CustomScheduleEventDay.WE,
-  CustomScheduleEventDay.TH,
-  CustomScheduleEventDay.FR,
+const RSCHEDULE_WEEKDAYS: number[] = [
+  1,
+  2,
+  3,
+  4,
+  5
 ];
 
 export const getCustomScheduleEventDayFromMeeting = (
@@ -95,44 +70,35 @@ const parseTimeRange = (range: string, date: Date = new Date()) => {
   return [parse(start, "h:mmb", date), parse(end, "h:mmb", date)];
 };
 
-type RRule = {
-  frequency?: CustomScheduleEventFrequency;
-  interval?: number;
-  byDayOfWeek?: CustomScheduleEventDay[];
-  byMonthDay?: number[];
-  byHourOfDay?: number[];
-  byMinuteOfHour?: number[];
-};
-
-const DAILY_REPEATABILITY = (date: Date): RRule => ({
-  frequency: "DAILY",
+const DAILY_REPEATABILITY = (date: Date) => ({
+  freq: Frequency.DAILY,
   interval: 1,
-  byHourOfDay: [date.getHours()],
-  byMinuteOfHour: [date.getMinutes()],
+  byhour: [date.getHours()],
+  byminute: [date.getMinutes()],
 });
 
-const WEEKLY_REPEATABILITY = (date: Date): RRule => ({
-  frequency: "WEEKLY",
+const WEEKLY_REPEATABILITY = (date: Date) => ({
+  freq: Frequency.WEEKLY,
   interval: 1,
-  byDayOfWeek: [DATE_DAY_TO_RSCHEDULE_DAY[date.getDay()]],
-  byHourOfDay: [date.getHours()],
-  byMinuteOfHour: [date.getMinutes()],
+  byweekday: [date.getDay()],
+  byhour: [date.getHours()],
+  byminute: [date.getMinutes()],
 });
 
-const WEEKDAY_REPEATABILITY = (date: Date): RRule => ({
-  frequency: "WEEKLY",
+const WEEKDAY_REPEATABILITY = (date: Date) => ({
+  freq: Frequency.WEEKLY,
   interval: 1,
-  byDayOfWeek: RSCHEDULE_WEEKDAYS,
-  byHourOfDay: [date.getHours()],
-  byMinuteOfHour: [date.getMinutes()],
+  byweekday: RSCHEDULE_WEEKDAYS,
+  byhour: [date.getHours()],
+  byminute: [date.getMinutes()],
 });
 
-const MONTHLY_REPEATABILITY = (date: Date): RRule => ({
-  frequency: "MONTHLY",
+const MONTHLY_REPEATABILITY = (date: Date) => ({
+  freq: Frequency.MONTHLY,
   interval: 1,
-  byMonthDay: [date.getDate()],
-  byHourOfDay: [date.getHours()],
-  byMinuteOfHour: [date.getMinutes()],
+  bymonth: [date.getDate()],
+  byhour: [date.getHours()],
+  byminute: [date.getMinutes()],
 });
 
 export const useCalendarEvents = (
@@ -187,48 +153,46 @@ export const useCalendarEvents = (
           }
           const [start, end] = parseTimeRange(meeting.time);
           const range = {
-            begin: new Rule({
-              start: term.instructionBegins,
-              end: term.instructionEnds,
-              // @ts-expect-error
-              frequency: "WEEKLY",
-              byHourOfDay: [start.getHours()],
-              byMinuteOfHour: [start.getMinutes()],
-              byDayOfWeek: days,
+            begin: new RRule({
+              dtstart: term.instructionBegins,
+              until: term.instructionEnds,
+              freq: Frequency.WEEKLY,
+              byhour: [start.getHours()],
+              byminute: [start.getMinutes()],
+              byweekday: days,
             }),
-            end: new Rule({
-              start: term.instructionBegins,
-              end: term.instructionEnds,
-              // @ts-expect-error
-              frequency: "WEEKLY",
-              byHourOfDay: [end.getHours()],
-              byMinuteOfHour: [end.getMinutes()],
-              byDayOfWeek: days,
+            end: new RRule({
+              dtstart: term.instructionBegins,
+              until: term.instructionEnds,
+              freq: Frequency.WEEKLY,
+              byhour: [end.getHours()],
+              byminute: [end.getMinutes()],
+              byweekday: days,
             }),
           };
           const occurences = {
-            begin: range.begin.occurrences().toArray(),
-            end: range.end.occurrences().toArray(),
+            begin: range.begin.all(),
+            end: range.end.all()
           };
           return occurences.begin.map((start, index) => {
             return {
               title: `${meeting.info.department.code} ${meeting.info.course.number}`,
-              start: start.date,
-              end: occurences.end[index].date,
+              start: start,
+              end: occurences.end[index],
               color: meeting.color,
               event: meeting,
               building: meeting.building,
               room: meeting.room,
               startEditable: false,
               durationEditable: false,
-              frequency: "WEEKLY",
+              frequency: Frequency.WEEKLY,
               days: days,
             };
           });
         }
 
         if (meeting.repeatability !== "NONE" && meeting.id !== "new") {
-          let end = meeting.repeatUntil;
+          let end = meeting.until;
           if (!end) {
             if (view === "dayGridMonth") {
               end = addMonths(date, 1);
@@ -241,116 +205,101 @@ export const useCalendarEvents = (
             }
           }
 
-          let rules: {
-            begin: {
-              start: Date;
-              end: Date;
-            } & RRule;
-            end: {
-              start: Date;
-              end: Date;
-            } & RRule;
-            days: CustomScheduleEventDay[];
-          } = {
-            begin: {
-              start: meeting.start,
-              end: end!,
-            },
-            end: {
-              start: meeting.start,
-              end: end!,
-            },
-            days: [],
-          };
+          let rules = {
+            begin: new RRule({
+              dtstart: meeting.start,
+              until: end,
+              bymonth: [],
+              bymonthday: [],
+            }),
+            end: new RRule({
+              dtstart: meeting.end,
+              until: end,
+              bymonth: [],
+              bymonthday: [],
+            }),
+          }
 
           if (meeting.repeatability === "DAILY") {
-            rules.begin = {
-              ...rules.begin,
+            rules.begin.options = {
+              ...rules.begin.options,
               ...DAILY_REPEATABILITY(meeting.start),
             };
-            rules.end = {
-              ...rules.end,
+            rules.end.options = {
+              ...rules.end.options,
               ...DAILY_REPEATABILITY(meeting.end),
             };
           }
 
           if (meeting.repeatability === "WEEKLY") {
-            rules.begin = {
-              ...rules.begin,
+            rules.begin.options = {
+              ...rules.begin.options,
               ...WEEKLY_REPEATABILITY(meeting.start),
             };
-            rules.end = {
-              ...rules.end,
+            rules.end.options = {
+              ...rules.end.options,
               ...WEEKLY_REPEATABILITY(meeting.end),
             };
-            rules.days.push(DATE_DAY_TO_RSCHEDULE_DAY[meeting.start.getDay()]);
           }
 
           if (meeting.repeatability === "WEEKDAY") {
-            rules.begin = {
-              ...rules.begin,
+            rules.begin.options = {
+              ...rules.begin.options,
               ...WEEKDAY_REPEATABILITY(meeting.start),
             };
-            rules.end = {
-              ...rules.end,
+            rules.end.options = {
+              ...rules.end.options,
               ...WEEKDAY_REPEATABILITY(meeting.end),
             };
-            rules.days.push(...RSCHEDULE_WEEKDAYS);
           }
 
           if (meeting.repeatability === "MONTHLY") {
-            rules.begin = {
-              ...rules.begin,
+            rules.begin.options = {
+              ...rules.begin.options,
               ...MONTHLY_REPEATABILITY(meeting.start),
             };
-            rules.end = {
-              ...rules.end,
+            rules.end.options = {
+              ...rules.end.options,
               ...MONTHLY_REPEATABILITY(meeting.end),
             };
           }
 
           if (meeting.repeatability === "CUSTOM") {
-            rules.begin = {
-              ...rules.begin,
-              frequency: meeting.frequency!,
+            rules.begin.options = {
+              ...rules.begin.options,
+              freq: meeting.frequency!,
               interval: meeting.interval!,
-              byHourOfDay: [meeting.start.getHours()],
-              byMinuteOfHour: [meeting.start.getMinutes()],
+              byhour: [meeting.start.getHours()],
+              byminute: [meeting.start.getMinutes()],
             };
-            rules.end = {
-              ...rules.end,
-              frequency: meeting.frequency!,
+            rules.end.options = {
+              ...rules.end.options,
+              freq: meeting.frequency!,
               interval: meeting.interval!,
-              byHourOfDay: [meeting.end.getHours()],
-              byMinuteOfHour: [meeting.end.getMinutes()],
+              byhour: [meeting.end.getHours()],
+              byminute: [meeting.end.getMinutes()],
             };
-            if (meeting.frequency === "WEEKLY") {
-              rules.days = meeting.days;
-              rules.begin.byDayOfWeek = meeting.days;
-              rules.end.byDayOfWeek = meeting.days;
+            if (meeting.frequency === Frequency.WEEKLY) {
+              rules.begin.options.byweekday = meeting.days;
+              rules.end.options.byweekday = meeting.days;
             }
           }
 
-          const range = {
-            begin: new Rule(rules.begin),
-            end: new Rule(rules.end),
-          };
-
           const occurences = {
-            begin: range.begin.occurrences().toArray(),
-            end: range.end.occurrences().toArray(),
+            begin: rules.begin.all(),
+            end: rules.end.all()
           };
 
           return occurences.begin.map((start, index) => {
             return {
               title: meeting.title,
-              start: start.date,
-              end: occurences.end[index].date,
+              start: start,
+              end: occurences.end[index],
               color: meeting.color,
               event: meeting,
-              frequency: rules.begin.frequency,
-              days: rules.days,
-              repeatsUntil: meeting.repeatUntil,
+              frequency: rules.begin.options.freq,
+              days: rules.begin.options.byweekday,
+              repeatsUntil: meeting.until,
               editable: true,
             };
           });

@@ -20,7 +20,7 @@ export function Navbar({ user }: NavbarProps) {
             <Link to="/auth/login">Login</Link>
           </Button>
           <Button asChild>
-            <Link to="/auth/signup">Sign up</Link>h
+            <Link to="/auth/signup">Sign up</Link>
           </Button>
         </div>
       )}

@@ -106,13 +106,6 @@ model CourseScheduleEvent {
   @@map("course_schedule_events")
 }
 
-enum CustomScheduleEventFrequency {
-  DAILY
-  WEEKLY
-  MONTHLY
-  YEARLY
-}
-
 enum CustomScheduleEventRepeatability {
   NONE
   DAILY
@@ -120,16 +113,6 @@ enum CustomScheduleEventRepeatability {
   WEEKDAY
   MONTHLY
   CUSTOM
-}
-
-enum CustomScheduleEventDay {
-  SU
-  MO
-  TU
-  WE
-  TH
-  FR
-  SA
 }
 
 model CustomScheduleEvent {
@@ -141,14 +124,15 @@ model CustomScheduleEvent {
   description String
   start DateTime
   end DateTime
-  frequency CustomScheduleEventFrequency?
+  /// @kyselyType(ColumnType<import('rrule').Frequency, number, number>)
+  frequency Int?
   interval Int?
-  days CustomScheduleEventDay[]
+  days Int[]
   weeks String[]
   months String[]
   color String
   repeatability CustomScheduleEventRepeatability
-  repeat_until DateTime?
+  until DateTime?
 
   @@map("custom_schedule_events")
 }

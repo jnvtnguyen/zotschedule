@@ -43,7 +43,6 @@ const getScheduleCalendarEvents = createServerFn(
       .selectFrom("customScheduleEvents")
       .where("scheduleId", "=", scheduleId)
       .selectAll()
-      .select(() => [sql<string[]>`days::text[]`.as("days")])
       .execute();
     return superjson.stringify([...courseEvents, ...customEvents]);
   },

@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { addMonths, format } from "date-fns";
 import { z } from "zod";
+import { Frequency } from "rrule";
 
 import {
   FormControl,
@@ -25,27 +26,22 @@ import { Button } from "@/lib/components/ui/button";
 import { DatePicker } from "@/lib/components/common/date-picker";
 import { cn } from "@/lib/utils/style";
 import {
-  CustomScheduleEventDay,
-  CustomScheduleEventFrequency,
-} from "@/lib/database/generated-types";
-import {
   COMMON_DAYS_TO_RSCHEDULE_DAYS,
-  DATE_DAY_TO_RSCHEDULE_DAY,
 } from "./use-calendar-events";
 
 const baseCustomRecurrenceFormSchema = z.object({
-  frequency: z.nativeEnum(CustomScheduleEventFrequency),
+  frequency: z.nativeEnum(Frequency),
   interval: z.number().min(1),
   ends: z.date().optional(),
 });
 
 const weeklyRecurrenceFormSchema = z.object({
-  frequency: z.literal(CustomScheduleEventFrequency.WEEKLY),
-  days: z.array(z.nativeEnum(CustomScheduleEventDay)),
+  frequency: z.literal(Frequency.WEEKLY),
+  days: z.array(z.number()),
 });
 
 const dailyRecurrenceFormSchema = z.object({
-  frequency: z.literal(CustomScheduleEventFrequency.DAILY),
+  frequency: z.literal(Frequency.DAILY),
 });
 
 const customRecurrenceFormSchema = z
@@ -71,12 +67,12 @@ export function CustomRecurrenceForm({
   const form = useForm<CustomRecurrence>({
     resolver: zodResolver(customRecurrenceFormSchema),
     defaultValues: {
-      frequency: data?.frequency || CustomScheduleEventFrequency.WEEKLY,
+      frequency: data?.frequency || Frequency.WEEKLY,
       interval: data?.interval || 1,
       ends: data?.ends || addMonths(start, 1),
       days:
-        data?.frequency === CustomScheduleEventFrequency.WEEKLY
-          ? data.days || [DATE_DAY_TO_RSCHEDULE_DAY[start.getDay()]]
+        data?.frequency === Frequency.WEEKLY
+          ? data.days || [start.getDay()]
           : [],
     },
   });
@@ -91,19 +87,19 @@ export function CustomRecurrenceForm({
     return [
       {
         label: "day" + (isPlural ? "s" : ""),
-        value: CustomScheduleEventFrequency.DAILY,
+        value: Frequency.DAILY,
       },
       {
         label: "week" + (isPlural ? "s" : ""),
-        value: CustomScheduleEventFrequency.WEEKLY,
+        value: Frequency.WEEKLY,
       },
       {
         label: "month" + (isPlural ? "s" : ""),
-        value: CustomScheduleEventFrequency.MONTHLY,
+        value: Frequency.MONTHLY,
       },
       {
         label: "year" + (isPlural ? "s" : ""),
-        value: CustomScheduleEventFrequency.YEARLY,
+        value: Frequency.YEARLY,
       },
     ];
   }, [interval]);
@@ -117,7 +113,7 @@ export function CustomRecurrenceForm({
 
   useEffect(() => {
     if (days.length === 0) {
-      form.setValue("days", [DATE_DAY_TO_RSCHEDULE_DAY[start.getDay()]!]);
+      form.setValue("days", [start.getDay()]);
     }
   }, [days]);
 
@@ -148,9 +144,9 @@ export function CustomRecurrenceForm({
               <FormItem>
                 <FormControl>
                   <Select
-                    value={field.value}
-                    onValueChange={(v: CustomScheduleEventFrequency) => {
-                      field.onChange(v);
+                    value={field.value.toString()}
+                    onValueChange={(v: string) => {
+                      field.onChange(parseInt(v));
                     }}
                   >
                     <SelectTrigger>
@@ -159,7 +155,7 @@ export function CustomRecurrenceForm({
                     <SelectContent>
                       <SelectGroup>
                         {frequencies.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
+                          <SelectItem key={option.value} value={option.value.toString()}>
                             {option.label}
                           </SelectItem>
                         ))}
@@ -171,7 +167,7 @@ export function CustomRecurrenceForm({
             )}
           />
         </div>
-        {frequency === CustomScheduleEventFrequency.WEEKLY && (
+        {frequency === Frequency.WEEKLY && (
           <div className="flex flex-col gap-1">
             <p className="text-[0.86rem] text-muted-foreground">Repeats on</p>
             <div className="flex flex-row gap-2">
