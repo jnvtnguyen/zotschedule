@@ -26,7 +26,8 @@ import { Button } from "@/lib/components/ui/button";
 import { DatePicker } from "@/lib/components/common/date-picker";
 import { cn } from "@/lib/utils/style";
 import {
-  COMMON_DAYS_TO_RSCHEDULE_DAYS,
+  COMMON_DAYS_TO_RRULE_DAYS,
+  DATE_DAY_TO_RRULE_DAY,
 } from "./use-calendar-events";
 
 const baseCustomRecurrenceFormSchema = z.object({
@@ -35,19 +36,30 @@ const baseCustomRecurrenceFormSchema = z.object({
   ends: z.date().optional(),
 });
 
-const weeklyRecurrenceFormSchema = z.object({
-  frequency: z.literal(Frequency.WEEKLY),
-  days: z.array(z.number()),
-});
 
 const dailyRecurrenceFormSchema = z.object({
   frequency: z.literal(Frequency.DAILY),
 });
 
+const weeklyRecurrenceFormSchema = z.object({
+  frequency: z.literal(Frequency.WEEKLY),
+  days: z.array(z.number()),
+});
+
+const monthlyRecurrenceFormSchema = z.object({
+  frequency: z.literal(Frequency.MONTHLY),
+});
+
+const yearlyRecurrenceFormSchema = z.object({
+  frequency: z.literal(Frequency.YEARLY),
+});
+
 const customRecurrenceFormSchema = z
   .discriminatedUnion("frequency", [
-    weeklyRecurrenceFormSchema,
     dailyRecurrenceFormSchema,
+    weeklyRecurrenceFormSchema,
+    monthlyRecurrenceFormSchema,
+    yearlyRecurrenceFormSchema,
   ])
   .and(baseCustomRecurrenceFormSchema);
 
@@ -64,21 +76,24 @@ export function CustomRecurrenceForm({
   start,
   data,
 }: CustomRecurrenceFormProps) {
+  const FORM_DEFAULTS: CustomRecurrence = {
+    frequency: Frequency.WEEKLY,
+    interval: 1,
+    ends: addMonths(start, 1),
+    days: [DATE_DAY_TO_RRULE_DAY[start.getDay()]],
+  };
+
   const form = useForm<CustomRecurrence>({
     resolver: zodResolver(customRecurrenceFormSchema),
-    defaultValues: {
-      frequency: data?.frequency || Frequency.WEEKLY,
-      interval: data?.interval || 1,
-      ends: data?.ends || addMonths(start, 1),
-      days:
-        data?.frequency === Frequency.WEEKLY
-          ? data.days || [start.getDay()]
-          : [],
-    },
+    defaultValues: data ? {
+      ...data,
+      ...FORM_DEFAULTS
+    } : FORM_DEFAULTS
   });
   const [isEnding, setIsEnding] = useState<"never" | "on">(
     data?.ends ? "on" : "never",
   );
+
   const interval = form.watch("interval");
   const frequency = form.watch("frequency");
   const days = form.watch("days") || [];
@@ -105,6 +120,7 @@ export function CustomRecurrenceForm({
   }, [interval]);
 
   const onSubmit = (data: z.infer<typeof customRecurrenceFormSchema>) => {
+    console.log(data)
     onClose({
       ...data,
       ends: isEnding === "never" ? undefined : data.ends,
@@ -113,9 +129,15 @@ export function CustomRecurrenceForm({
 
   useEffect(() => {
     if (days.length === 0) {
-      form.setValue("days", [start.getDay()]);
+      form.setValue("days", [DATE_DAY_TO_RRULE_DAY[start.getDay()]]);
     }
   }, [days]);
+
+  useEffect(() => {
+    if (frequency !== Frequency.WEEKLY) {
+      form.setValue("days", []);
+    }
+  }, [frequency]);
 
   return (
     <Form {...form}>
@@ -171,7 +193,7 @@ export function CustomRecurrenceForm({
           <div className="flex flex-col gap-1">
             <p className="text-[0.86rem] text-muted-foreground">Repeats on</p>
             <div className="flex flex-row gap-2">
-              {Object.entries(COMMON_DAYS_TO_RSCHEDULE_DAYS).map(
+              {Object.entries(COMMON_DAYS_TO_RRULE_DAYS).map(
                 ([key, value]) => (
                   <span key={`days-${value}`}>
                     <div

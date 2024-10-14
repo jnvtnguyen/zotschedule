@@ -41,7 +41,7 @@ import { CustomScheduleEventRepeatability } from "@/lib/database/generated-types
 import { CustomRecurrenceDialog } from "./custom-recurrence-dialog";
 import { CustomRecurrence } from "./custom-recurrence-form";
 import {
-  RSCHEDULE_DAYS_TO_LABEL,
+  RRULE_DAYS_TO_LABEL,
 } from "./use-calendar-events";
 
 const newEventFormSchema = z.object({
@@ -181,7 +181,7 @@ export function NewEventForm({
             (a, b) =>
               a - b
           )
-          .map((day) => RSCHEDULE_DAYS_TO_LABEL[day])
+          .map((day) => RRULE_DAYS_TO_LABEL[day])
           .join(", ")}`;
       }
 

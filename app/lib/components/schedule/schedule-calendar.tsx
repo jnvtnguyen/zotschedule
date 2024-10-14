@@ -23,6 +23,7 @@ import interactionPlugin, {
   EventReceiveArg,
   EventResizeDoneArg,
 } from "@fullcalendar/interaction";
+import { motion } from 'framer-motion';
 
 import { useScheduleCalendar } from "@/lib/hooks/use-schedule-calendar";
 import { useSchedule } from "@/lib/hooks/use-schedule";
@@ -156,74 +157,80 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
 
   return (
     <div className="flex flex-col w-full h-full space-y-2">
-      <FullCalendar
-        height="100%"
-        initialDate={date}
-        initialView={view}
-        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
-        ref={ref}
-        events={events}
-        allDaySlot={false}
-        headerToolbar={false}
-        eventContent={EventContent}
-        weekends={showWeekends}
-        selectMinDistance={5}
-        slotMinTime={{
-          hours: 2
-        }}
-        slotMaxTime={{
-          hours: 26
-        }}
-        slotDuration={{
-          hours: 1,
-        }}
-        snapDuration={{
-          minutes: 15,
-        }}
-        expandRows={true}
-        selectable={!anchor}
-        editable={true}
-        droppable={true}
-        select={onSelect}
-        dateClick={onClick}
-        eventClick={onEventClick}
-        eventClassNames={(event) => {
-          if (event.event.extendedProps.event.id === "new") {
-            return ["new-event"];
-          }
-          return [];
-        }}
-        eventResizeStart={() => setIsDragging(true)}
-        eventResizeStop={() => {
-          setIsDragging(false);
-          setAnchor(
-            document.querySelector(".fc-event.new-event") as HTMLAnchorElement,
-          );
-        }}
-        eventResize={(info) => onEventAction(info)}
-        eventDragStart={() => setIsDragging(true)}
-        eventDragStop={() => {
-          setIsDragging(false);
-          setAnchor(
-            document.querySelector(".fc-event.new-event") as HTMLAnchorElement,
-          );
-        }}
-        eventReceive={(info) => onEventAction(info)}
-        eventDidMount={(info) => {
-          const event = info.event.extendedProps.event as ScheduleCalendarEvent;
-          if (event.id === "new") {
-            setAnchor(info.el as HTMLAnchorElement);
-            setSelected(info.event);
-            return;
-          }
-          if (event.id === selected?.extendedProps.event.id) {
-            setAnchor(info.el as HTMLAnchorElement);
-            setSelected(info.event);
-          }
-        }}
-        dayHeaderContent={DayHeaderContent}
-        slotLabelContent={SlotLabelContent}
-      />
+      <motion.div
+        className="w-full h-full"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1, transition: { delay: 0.2 } }}
+      >
+        <FullCalendar
+          height="100%"
+          initialDate={date}
+          initialView={view}
+          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
+          ref={ref}
+          events={events}
+          allDaySlot={false}
+          headerToolbar={false}
+          eventContent={EventContent}
+          weekends={showWeekends}
+          selectMinDistance={5}
+          slotMinTime={{
+            hours: 2
+          }}
+          slotMaxTime={{
+            hours: 26
+          }}
+          slotDuration={{
+            hours: 1,
+          }}
+          snapDuration={{
+            minutes: 15,
+          }}
+          expandRows={true}
+          selectable={!anchor}
+          editable={true}
+          droppable={true}
+          select={onSelect}
+          dateClick={onClick}
+          eventClick={onEventClick}
+          eventClassNames={(event) => {
+            if (event.event.extendedProps.event.id === "new") {
+              return ["new-event"];
+            }
+            return [];
+          }}
+          eventResizeStart={() => setIsDragging(true)}
+          eventResizeStop={() => {
+            setIsDragging(false);
+            setAnchor(
+              document.querySelector(".fc-event.new-event") as HTMLAnchorElement,
+            );
+          }}
+          eventResize={(info) => onEventAction(info)}
+          eventDragStart={() => setIsDragging(true)}
+          eventDragStop={() => {
+            setIsDragging(false);
+            setAnchor(
+              document.querySelector(".fc-event.new-event") as HTMLAnchorElement,
+            );
+          }}
+          eventReceive={(info) => onEventAction(info)}
+          eventDidMount={(info) => {
+            const event = info.event.extendedProps.event as ScheduleCalendarEvent;
+            if (event.id === "new") {
+              setAnchor(info.el as HTMLAnchorElement);
+              setSelected(info.event);
+              return;
+            }
+            if (event.id === selected?.extendedProps.event.id) {
+              setAnchor(info.el as HTMLAnchorElement);
+              setSelected(info.event);
+            }
+          }}
+          dayHeaderContent={DayHeaderContent}
+          slotLabelContent={SlotLabelContent}
+        />
+      </motion.div>
       {anchor && selected && isNewEvent && (
         <NewEventPopover
           event={selected}

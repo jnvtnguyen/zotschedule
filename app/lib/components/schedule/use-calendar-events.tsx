@@ -10,35 +10,45 @@ import { isCourseScheduleEvent } from "@/lib/uci/events/types";
 import { View } from "@/lib/hooks/use-schedule-calendar";
 import { Frequency, RRule } from "rrule";
 
-export const COMMON_DAYS_TO_RSCHEDULE_DAYS: Record<
+export const COMMON_DAYS_TO_RRULE_DAYS: Record<
   string,
   number
 > = {
-  Su: 0,
-  M: 1,
-  Tu: 2,
-  W: 3,
-  Th: 4,
-  F: 5,
-  Sa: 6,
+  M: 0,
+  Tu: 1,
+  W: 2,
+  Th: 3,
+  F: 4,
+  Sa: 5,
+  Su: 6,
 };
 
-export const RSCHEDULE_DAYS_TO_LABEL: Record<number, string> = {
-  0: "Sunday",
-  1: "Monday",
-  2: "Tuesday",
-  3: "Wednesday",
-  4: "Thursday",
-  5: "Friday",
-  6: "Saturday",
+export const RRULE_DAYS_TO_LABEL: Record<number, string> = {
+  0: "Monday",
+  1: "Tuesday",
+  2: "Wednesday",
+  3: "Thursday",
+  4: "Friday",
+  5: "Saturday",
+  6: "Sunday",
 };
 
-const RSCHEDULE_WEEKDAYS: number[] = [
+export const DATE_DAY_TO_RRULE_DAY: Record<number, number> = {
+  0: 6,
+  1: 0,
+  2: 1,
+  3: 2,
+  4: 3,
+  5: 4,
+  6: 5,
+};
+
+const RRULE_WEEKDAYS: number[] = [
+  0,
   1,
   2,
   3,
   4,
-  5
 ];
 
 export const getCustomScheduleEventDayFromMeeting = (
@@ -48,7 +58,7 @@ export const getCustomScheduleEventDayFromMeeting = (
   if (!days) {
     return [];
   }
-  return days.map((day) => COMMON_DAYS_TO_RSCHEDULE_DAYS[day]);
+  return days.map((day) => COMMON_DAYS_TO_RRULE_DAYS[day]);
 };
 
 const parseTimeRange = (range: string, date: Date = new Date()) => {
@@ -80,7 +90,7 @@ const DAILY_REPEATABILITY = (date: Date) => ({
 const WEEKLY_REPEATABILITY = (date: Date) => ({
   freq: Frequency.WEEKLY,
   interval: 1,
-  byweekday: [date.getDay()],
+  byweekday: [DATE_DAY_TO_RRULE_DAY[date.getDay()]],
   byhour: [date.getHours()],
   byminute: [date.getMinutes()],
 });
@@ -88,7 +98,7 @@ const WEEKLY_REPEATABILITY = (date: Date) => ({
 const WEEKDAY_REPEATABILITY = (date: Date) => ({
   freq: Frequency.WEEKLY,
   interval: 1,
-  byweekday: RSCHEDULE_WEEKDAYS,
+  byweekday: RRULE_WEEKDAYS,
   byhour: [date.getHours()],
   byminute: [date.getMinutes()],
 });
@@ -100,6 +110,26 @@ const MONTHLY_REPEATABILITY = (date: Date) => ({
   byhour: [date.getHours()],
   byminute: [date.getMinutes()],
 });
+
+const setPartsToUTCDate = (date: Date) => new Date(Date.UTC(
+  date.getFullYear(),
+  date.getMonth(),
+  date.getDate(),
+  date.getHours(),
+  date.getMinutes(),
+  date.getSeconds(),
+  date.getMilliseconds(),
+));
+
+const setUTCPartsToDate = (date: Date) => new Date(
+  date.getUTCFullYear(),
+  date.getUTCMonth(),
+  date.getUTCDate(),
+  date.getUTCHours(),
+  date.getUTCMinutes(),
+  date.getUTCSeconds(),
+  date.getUTCMilliseconds(),
+);
 
 export const useCalendarEvents = (
   scheduleId: string,
@@ -152,9 +182,9 @@ export const useCalendarEvents = (
             return;
           }
           const [start, end] = parseTimeRange(meeting.time);
-          const range = {
+          const rules = {
             begin: new RRule({
-              dtstart: term.instructionBegins,
+              dtstart: setPartsToUTCDate(term.instructionBegins),
               until: term.instructionEnds,
               freq: Frequency.WEEKLY,
               byhour: [start.getHours()],
@@ -162,7 +192,7 @@ export const useCalendarEvents = (
               byweekday: days,
             }),
             end: new RRule({
-              dtstart: term.instructionBegins,
+              dtstart: setPartsToUTCDate(term.instructionBegins),
               until: term.instructionEnds,
               freq: Frequency.WEEKLY,
               byhour: [end.getHours()],
@@ -171,8 +201,8 @@ export const useCalendarEvents = (
             }),
           };
           const occurences = {
-            begin: range.begin.all(),
-            end: range.end.all()
+            begin: rules.begin.all().map(setUTCPartsToDate),
+            end: rules.end.all().map(setUTCPartsToDate),
           };
           return occurences.begin.map((start, index) => {
             return {
@@ -207,13 +237,13 @@ export const useCalendarEvents = (
 
           let rules = {
             begin: new RRule({
-              dtstart: meeting.start,
+              dtstart: setUTCPartsToDate(meeting.start),
               until: end,
               bymonth: [],
               bymonthday: [],
             }),
             end: new RRule({
-              dtstart: meeting.end,
+              dtstart: setUTCPartsToDate(meeting.end),
               until: end,
               bymonth: [],
               bymonthday: [],
@@ -284,10 +314,10 @@ export const useCalendarEvents = (
               rules.end.options.byweekday = meeting.days;
             }
           }
-
+          
           const occurences = {
-            begin: rules.begin.all(),
-            end: rules.end.all()
+            begin: rules.begin.all().map(setUTCPartsToDate),
+            end: rules.end.all().map(setUTCPartsToDate),
           };
 
           return occurences.begin.map((start, index) => {
@@ -299,7 +329,7 @@ export const useCalendarEvents = (
               event: meeting,
               frequency: rules.begin.options.freq,
               days: rules.begin.options.byweekday,
-              repeatsUntil: meeting.until,
+              until: meeting.until,
               editable: true,
             };
           });

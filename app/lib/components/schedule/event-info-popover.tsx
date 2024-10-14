@@ -12,7 +12,7 @@ import { SECTION_TYPE_TO_LABEL } from "@/lib/uci/offerings/types";
 import { EventPopover, EventPopoverProps } from "./event-popover";
 import { EventColorPicker } from "./schedule-actions-panel/event/event-color-picker";
 import { RemoveEventButton } from "./schedule-actions-panel/event/remove-event-button";
-import { RSCHEDULE_DAYS_TO_LABEL } from "./use-calendar-events";
+import { RRULE_DAYS_TO_LABEL } from "./use-calendar-events";
 
 export type EventInfoPopoverProps = Omit<
   EventPopoverProps,
@@ -54,10 +54,10 @@ export function EventInfoPopover({
           <p className="text-xs">
             {FREQUENCY_TO_LABEL[base.extendedProps.frequency as Frequency]}
             {base.extendedProps.days?.length
-              ? ` on ${base.extendedProps.days.map((day: number) => RSCHEDULE_DAYS_TO_LABEL[day]).join(", ")}`
+              ? ` on ${base.extendedProps.days.map((day: number) => RRULE_DAYS_TO_LABEL[day]).join(", ")}`
               : ""}
-            {base.extendedProps.repeatsUntil
-              ? ` until ${format(base.extendedProps.repeatsUntil, "EEEE, MMMM d")}`
+            {base.extendedProps.until
+              ? ` until ${format(base.extendedProps.until, "EEEE, MMMM d")}`
               : ""}
           </p>
         )}
