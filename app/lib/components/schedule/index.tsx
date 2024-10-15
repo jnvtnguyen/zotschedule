@@ -41,7 +41,7 @@ export function ScheduleView({ user }: ScheduleViewProps) {
             minSize={25}
             defaultSize={65}
             onResize={(w) => setWidth(w)}
-            className="h-[calc(100vh-4.8rem)] pb-2"
+            className="h-[calc(100vh-4.8rem)]"
           >
             <ScheduleCalendar width={width} />
           </ResizablePanel>

@@ -12,7 +12,7 @@ export function ScheduleActionsPanelOfferingCourse({
   department,
 }: ScheduleActionsPanelOfferingCourseProps) {
   return (
-    <div className="flex flex-col space-y-2 bg-white rounded-lg border p-3">
+    <div className="flex flex-col space-y-2 rounded-lg border p-3">
       <div className="flex items-center space-x-2 text-lg p-1">
         <p className="font-bold">
           {department.code} {course.number}

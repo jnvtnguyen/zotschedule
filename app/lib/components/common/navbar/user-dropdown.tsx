@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { PersonIcon } from "@radix-ui/react-icons";
+import { useTheme } from "next-themes";
 
 import { AuthUser, logoutCurrentSession } from "@/lib/auth";
 import {
@@ -7,8 +8,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
+  DropdownMenuSubContent,
 } from "@/lib/components/ui/dropdown-menu";
 
 import { Button } from "@/lib/components/ui/button";
@@ -19,6 +22,7 @@ type UserDropdownProps = {
 };
 
 export function UserDropdown({ user }: UserDropdownProps) {
+  const { setTheme, theme } = useTheme();
   const navigate = useNavigate();
 
   const onLogout = async () => {
@@ -42,9 +46,16 @@ export function UserDropdown({ user }: UserDropdownProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>Settings</DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>Theme</DropdownMenuSubTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem onSelect={() => setTheme("system")}>System</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setTheme("light")}>Light</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setTheme("dark")}>Dark</DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuPortal>
+        </DropdownMenuSub>
         <DropdownMenuItem onClick={onLogout}>Logout</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

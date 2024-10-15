@@ -75,7 +75,9 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   const events = useCalendarEvents(schedule.id, view, date);
   const ref = useRef<FullCalendar>(null);
 
-  const reset = async (anchor?: HTMLDivElement, selected?: EventImpl) => {
+  const reset = async (anchor?: HTMLDivElement, selected?: EventImpl) => { 
+    setAnchor(anchor);
+    setSelected(selected);
     if (isNewEvent) {
       queryClient.setQueryData(
         ["schedule-events", schedule.id],
@@ -84,8 +86,6 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
         },
       );
     }
-    setAnchor(anchor);
-    setSelected(selected);
   };
 
   useEffect(() => {
@@ -332,7 +332,7 @@ function EventContent(props: EventContentArg) {
           </p>
           <p>{event.info.section.type}</p>
         </div>
-        <p className="text-xs">
+        <p className="text-xs whitespace-nowrap text-ellipsis overflow-hidden">
           {format(base.start!, "hh:mm a")} -{" "}
           {format(base.end!, "hh:mm a")}, {extended.building}{" "}
           {extended.room}

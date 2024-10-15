@@ -1,4 +1,4 @@
-import * as React from "react";
+import { Suspense } from "react";
 import {
   Outlet,
   ScrollRestoration,
@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-router";
 import { Body, Head, Html, Meta, Scripts } from "@tanstack/start";
 import { QueryClient } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ThemeProvider } from "next-themes";
 import nprogress from "nprogress";
 import "nprogress/nprogress.css";
 
@@ -54,10 +54,12 @@ function RootComponent() {
 
   return (
     <RootDocument>
-      <div className="h-full w-full flex flex-col">
-        {!isScheduleRoute && <Navbar user={session.user} />}
-        <Outlet />
-      </div>
+      <Suspense>
+        <div className="h-full w-full flex flex-col">
+          {!isScheduleRoute && <Navbar user={session.user} />}
+          <Outlet />
+        </div>
+      </Suspense>
       <Toaster />
     </RootDocument>
   );
@@ -70,10 +72,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <Meta />
       </Head>
       <Body>
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
         <Scripts />
         <ScrollRestoration getKey={(location) => location.pathname} />
-        <ReactQueryDevtools initialIsOpen={false} />
       </Body>
     </Html>
   );

@@ -8,7 +8,7 @@ export function TimePicker(props: Omit<TimeFieldStateOptions, 'locale'>) {
   let { locale } = useLocale();
   let state = useTimeFieldState({
     ...props,
-    locale
+    locale,
   });
 
   let ref = useRef(null);
@@ -50,7 +50,7 @@ function DateSegmentView({ segment, state }: DataSegmentViewProps) {
       {...segmentProps}
       ref={ref}
       className={cn(
-        "px-[1px] focus:bg-primary focus:text-white focus:outline-none focus:border-r tabular-nums text-end font-normal rounded-md"
+        "px-[1px] focus:bg-primary focus:text-primary-foreground focus:outline-none focus:border-r tabular-nums text-end font-normal rounded-md"
       )}
     >
       {segment.text}

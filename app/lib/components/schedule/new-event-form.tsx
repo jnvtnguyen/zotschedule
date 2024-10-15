@@ -248,6 +248,7 @@ export function NewEventForm({
 
   useEffect(() => {
     form.setValue("end", event.extendedProps.event.end);
+    console.log(event.extendedProps.event.end)
     form.setValue("times.end", {
       hour: event.extendedProps.event.end.getHours(),
       minute: event.extendedProps.event.end.getMinutes(),
