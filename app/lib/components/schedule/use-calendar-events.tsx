@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { addMonths, addWeeks, parse, subHours } from "date-fns";
+import { addMonths, addWeeks, parse, subDays, subHours } from "date-fns";
 import { EventInput } from "@fullcalendar/core";
 
 import { useScheduleCalendarEvents } from "@/lib/hooks/use-schedule-calendar-events";
@@ -237,13 +237,13 @@ export const useCalendarEvents = (
 
           let rules = {
             begin: new RRule({
-              dtstart: setUTCPartsToDate(meeting.start),
+              dtstart: subDays(setUTCPartsToDate(meeting.start), 1),
               until: end,
               bymonth: [],
               bymonthday: [],
             }),
             end: new RRule({
-              dtstart: setUTCPartsToDate(meeting.end),
+              dtstart: subDays(setUTCPartsToDate(meeting.end), 1),
               until: end,
               bymonth: [],
               bymonthday: [],

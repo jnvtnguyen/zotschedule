@@ -24,7 +24,8 @@ import interactionPlugin, {
   EventReceiveArg,
   EventResizeDoneArg,
 } from "@fullcalendar/interaction";
-import { motion } from 'framer-motion';
+import { Spinner } from "@phosphor-icons/react";
+import { Controller, animated } from "@react-spring/web";
 
 import { useScheduleCalendar } from "@/lib/hooks/use-schedule-calendar";
 import { useSchedule } from "@/lib/hooks/use-schedule";
@@ -40,7 +41,6 @@ import {
 import { cn } from "@/lib/utils/style";
 import { CustomScheduleEventRepeatability } from "@/lib/database/generated-types";
 import { EventInfoPopover } from "./event-info-popover";
-import { Spinner } from "@phosphor-icons/react";
 
 type ScheduleCalendarProps = {
   width: number;
@@ -66,18 +66,23 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isPrevious, setIsPrevious] = useState(false);
   const [isNext, setIsNext] = useState(false);
+  const [isFirstMount, setIsFirstMount] = useState(true);
+  const { isLoading } = useScheduleCalendarEvents(schedule.id);
+  const animations = new Controller({
+    opacity: 0,
+    transform: "translateY(10px)",
+  })
   const isNewEvent = selected?.extendedProps.event.id === "new";
   const queryClient = useQueryClient();
   const view = useScheduleCalendar((state) => state.view);
   const date = useScheduleCalendar((state) => state.date);
-  const { isLoading } = useScheduleCalendarEvents(schedule.id);
   const showWeekends = useScheduleCalendar((state) => state.showWeekends);
   const events = useCalendarEvents(schedule.id, view, date);
   const ref = useRef<FullCalendar>(null);
 
   const reset = async (anchor?: HTMLDivElement, selected?: EventImpl) => { 
     setAnchor(anchor);
-    setSelected(selected);
+    setSelected(selected); 
     if (isNewEvent) {
       queryClient.setQueryData(
         ["schedule-events", schedule.id],
@@ -133,6 +138,13 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
     });
   }, [isNewEvent]);
 
+  useEffect(() => {
+    animations.start({
+      opacity: 1,
+      transform: "translateY(0)",
+    });
+  }, [isLoading, isPrevious, isNext])
+
   const onSelect = (info: DateSelectArg) => {
     let start = info.start;
     let end = info.end;
@@ -155,7 +167,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
     );
   };
 
-  const onEventAction = (info: EventResizeDoneArg | EventReceiveArg | EventDropArg) => {
+  const onEventAction = (info: EventResizeDoneArg | EventDropArg) => {
     const event = info.event.extendedProps.event as ScheduleCalendarEvent;
     queryClient.setQueryData(
       ["schedule-events", schedule.id],
@@ -189,12 +201,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
           <Spinner className="w-10 h-10 animate-spin" />
         </div>
       ) : (
-        <motion.div
-          key={isPrevious ? "previous" : isNext ? "next" : "current"}
-          className="w-full h-full"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-        >
+        <animated.div className="w-full h-full" style={animations.springs}>
           <FullCalendar
             height="100%"
             initialDate={date}
@@ -226,7 +233,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
                 return ["dragging"];
               }
               if (event.isMirror) {
-                return [];
+                return ["mirror"];
               }
               if (event.event.extendedProps.event.id === "new") {
                 return ["new-event"];
@@ -249,8 +256,11 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
               );
             }}
             eventDrop={(info) => onEventAction(info)}
-            eventReceive={(info) => onEventAction(info)}
             eventDidMount={(info) => {
+              info.event.setExtendedProp("height", info.el.clientHeight);
+              setTimeout(() => {
+                info.event.setExtendedProp("height", info.el.clientHeight);
+              }, 1);
               if (info.isMirror) {
                 return;
               }
@@ -268,7 +278,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
             dayHeaderContent={DayHeaderContent}
             slotLabelContent={SlotLabelContent}
           />
-        </motion.div>
+        </animated.div>
       )}
       {anchor && selected && isNewEvent && (
         <NewEventPopover
@@ -290,6 +300,44 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   );
 }
 
+const getFormattedRange = (start: Date, end: Date | null) => {
+  const formatted = {
+    start: '',
+    end: ''
+  }
+
+  const meridiems = {
+    start: format(start, 'a'),
+    end: end ? format(end, 'a') : ''
+  };
+
+  if (start.getMinutes() === 0) {
+    if (meridiems.start === meridiems.end) {
+      formatted.start = format(start, 'h');
+    } else {
+      formatted.start = format(start, "h a");
+    }
+  } else {
+    if (meridiems.start === meridiems.end) {
+      formatted.start = format(start, "h:mm");
+    } else {
+      formatted.start = format(start, "h:mm a");
+    }
+  }
+
+  if (!end) {
+    return formatted;
+  }
+
+  if (end.getMinutes() === 0) {
+    formatted.end = format(end, "h a");
+  } else {
+    formatted.end = format(end, "h:mm a");
+  }
+
+  return formatted;
+}
+
 function SlotLabelContent(props: SlotLabelContentArg) {
   return <p className="text-[0.8rem]">{format(props.date, "hh:mm a")}</p>;
 }
@@ -307,17 +355,45 @@ function EventContent(props: EventContentArg) {
   const base = props.event;
   const extended = props.event.extendedProps;
   const event = extended.event as ScheduleCalendarEvent;
+  const formatted = getFormattedRange(base.start!, base.end);
+  const height = props.isMirror ?
+    document.querySelector(".fc-event-mirror")?.clientHeight : 
+    base.extendedProps.height
 
-  if (props.isMirror) {
-    return (
-      <div className="flex flex-col">
-        <p className="font-semibold text-[0.8rem]">
+  const classes = {
+    container: cn("flex flex-col", {
+      "flex-row gap-1 w-full": height < 30
+    }),
+    title: cn("font-semibold text-[0.8rem] truncate", {
+      "text-xs": height < 40,
+      "text-[0.64rem]": height < 20
+    }),
+  }
+
+  const content = {
+    title: height < 30 ? (
+      <p className={classes.title}>
+        {base.title === "" ? "(No Title)" : base.title}, {" "}
+        {formatted.start}
+        {base.end ? ` - ${formatted.end}` : ""}
+      </p>
+    ) : (
+      <>
+        <p className={classes.title}>
           {base.title === "" ? "(No Title)" : base.title}
         </p>
         <p className="text-xs">
-          {format(base.start!, "hh:mm a")}
-          {base.end ? ` - ${format(base.end!, "hh:mm a")} ` : ""}
-        </p>
+          {formatted.start}
+          {base.end ? ` - ${formatted.end}` : ""}
+        </p> 
+      </>
+    )
+  };
+
+  if (props.isMirror) {
+    return (
+      <div className={classes.container}>
+        {content.title}
       </div>
     );
   }
@@ -331,29 +407,20 @@ function EventContent(props: EventContentArg) {
           </p>
           <p>{event.info.section.type}</p>
         </div>
-        <p className="text-xs whitespace-nowrap text-ellipsis overflow-hidden">
-          {format(base.start!, "hh:mm a")} -{" "}
-          {format(base.end!, "hh:mm a")}, {extended.building}{" "}
+        <p className="text-xs truncate">
+          {formatted.start} -{" "}
+          {formatted.end}, {extended.building}{" "}
           {extended.room}
         </p>
       </div>
     );
   }
 
-  const height = extended.height;
   return (
     <div
-      className={cn("flex flex-col", {
-        "flex-row items-center gap-1": height < 30,
-      })}
+      className={classes.container}
     >
-      <p className="font-semibold text-[0.8rem]">
-        {event.title === "" ? "(No Title)" : event.title}
-      </p>
-      <p className="text-xs">
-        {format(base.start!, "hh:mm a")}
-        {base.end ? ` - ${format(base.end, "hh:mm a")}` : ""}
-      </p>
+      {content.title}
     </div>
   );
 }
