@@ -29,7 +29,7 @@ export function ScheduleView({ user }: ScheduleViewProps) {
   return (
     <ScheduleCalendarContext.Provider
       value={createScheduleCalendarStore(
-        "timeGridWeek",
+        schedule.view,
         new Date(),
         schedule.showWeekends,
       )}
@@ -41,7 +41,7 @@ export function ScheduleView({ user }: ScheduleViewProps) {
             minSize={25}
             defaultSize={65}
             onResize={(w) => setWidth(w)}
-            className="h-[calc(100vh-4.8rem)]"
+            className="h-[calc(100vh-4.8rem)] pb-2"
           >
             <ScheduleCalendar width={width} />
           </ResizablePanel>

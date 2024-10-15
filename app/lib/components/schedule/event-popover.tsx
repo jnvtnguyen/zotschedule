@@ -14,7 +14,7 @@ import { Button } from "@/lib/components/ui/button";
 import { useSchedule } from "@/lib/hooks/use-schedule";
 
 export type EventPopoverProps = {
-  anchor: HTMLAnchorElement;
+  anchor: HTMLDivElement;
   title: string;
   onClose: () => void;
   isDragging: boolean;
@@ -38,11 +38,8 @@ export function EventPopover({
       reference: anchor,
     },
     middleware: [
-      offset(5),
-      autoPlacement({
-        crossAxis: true,
-        boundary: document.querySelector(".fc-scrollgrid") as HTMLElement,
-      }),
+      offset(2),
+      autoPlacement(),
     ],
     whileElementsMounted: autoUpdate,
     open: true,

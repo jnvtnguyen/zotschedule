@@ -84,6 +84,8 @@ model Schedule {
   name       String
   is_default Boolean
   show_weekends Boolean
+  /// @kyselyType(ColumnType<import('@/lib/hooks/use-schedule-calendar.tsx').View, string, string>)
+  view        String
 
   user_id String
   user    User   @relation(fields: [user_id], references: [id])

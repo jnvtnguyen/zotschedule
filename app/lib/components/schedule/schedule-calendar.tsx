@@ -6,6 +6,7 @@ import {
   DayHeaderContentArg,
   EventClickArg,
   EventContentArg,
+  EventDropArg,
   SlotLabelContentArg,
 } from "@fullcalendar/core";
 import { EventImpl } from "@fullcalendar/core/internal";
@@ -34,10 +35,12 @@ import { NewEventPopover } from "./new-event-popover";
 import {
   isCourseScheduleCalendarEvent,
   ScheduleCalendarEvent,
+  useScheduleCalendarEvents,
 } from "@/lib/hooks/use-schedule-calendar-events";
 import { cn } from "@/lib/utils/style";
 import { CustomScheduleEventRepeatability } from "@/lib/database/generated-types";
 import { EventInfoPopover } from "./event-info-popover";
+import { Spinner } from "@phosphor-icons/react";
 
 type ScheduleCalendarProps = {
   width: number;
@@ -58,18 +61,21 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   if (!schedule) {
     return;
   }
-  const [anchor, setAnchor] = useState<HTMLAnchorElement | undefined>();
+  const [anchor, setAnchor] = useState<HTMLDivElement | undefined>();
   const [selected, setSelected] = useState<EventImpl | undefined>();
   const [isDragging, setIsDragging] = useState(false);
+  const [isPrevious, setIsPrevious] = useState(false);
+  const [isNext, setIsNext] = useState(false);
   const isNewEvent = selected?.extendedProps.event.id === "new";
   const queryClient = useQueryClient();
   const view = useScheduleCalendar((state) => state.view);
   const date = useScheduleCalendar((state) => state.date);
+  const { isLoading } = useScheduleCalendarEvents(schedule.id);
   const showWeekends = useScheduleCalendar((state) => state.showWeekends);
   const events = useCalendarEvents(schedule.id, view, date);
   const ref = useRef<FullCalendar>(null);
 
-  const reset = async (anchor?: HTMLAnchorElement, selected?: EventImpl) => {
+  const reset = async (anchor?: HTMLDivElement, selected?: EventImpl) => {
     if (isNewEvent) {
       queryClient.setQueryData(
         ["schedule-events", schedule.id],
@@ -93,7 +99,20 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   useEffect(() => {
     queueMicrotask(() => {
       if (ref.current) {
+        const current = ref.current.getApi().getDate();
         ref.current.getApi().gotoDate(date);
+        if (date < current) {
+          setIsPrevious(true);
+          setTimeout(() => {
+            setIsPrevious(false);
+          }, 1);
+        }
+        if (date > current) {
+          setIsNext(true);
+          setTimeout(() => {
+            setIsNext(false);
+          }, 1);
+        }
       }
     });
   }, [date]);
@@ -105,6 +124,14 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
       }
     });
   }, [width]);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      if (ref.current) {
+        ref.current.getApi().unselect();
+      }
+    });
+  }, [isNewEvent]);
 
   const onSelect = (info: DateSelectArg) => {
     let start = info.start;
@@ -128,12 +155,13 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
     );
   };
 
-  const onEventAction = (info: EventResizeDoneArg | EventReceiveArg) => {
+  const onEventAction = (info: EventResizeDoneArg | EventReceiveArg | EventDropArg) => {
     const event = info.event.extendedProps.event as ScheduleCalendarEvent;
     queryClient.setQueryData(
       ["schedule-events", schedule.id],
       (events: ScheduleEvent[]) => {
         return events.map((e) => {
+          console.log(info.event.start, info.event.end)
           if (e.id === event.id && !isCourseScheduleCalendarEvent(event)) {
             return {
               ...e,
@@ -152,85 +180,97 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
     if (event.id === "new") {
       return;
     }
-    reset(info.el as HTMLAnchorElement, info.event);
+    reset(info.el.parentElement as HTMLDivElement, info.event);
   };
 
   return (
     <div className="flex flex-col w-full h-full space-y-2">
-      <motion.div
-        className="w-full h-full"
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1, transition: { delay: 0.2 } }}
-      >
-        <FullCalendar
-          height="100%"
-          initialDate={date}
-          initialView={view}
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
-          ref={ref}
-          events={events}
-          allDaySlot={false}
-          headerToolbar={false}
-          eventContent={EventContent}
-          weekends={showWeekends}
-          selectMinDistance={5}
-          slotMinTime={{
-            hours: 2
-          }}
-          slotMaxTime={{
-            hours: 26
-          }}
-          slotDuration={{
-            hours: 1,
-          }}
-          snapDuration={{
-            minutes: 15,
-          }}
-          expandRows={true}
-          selectable={!anchor}
-          editable={true}
-          droppable={true}
-          select={onSelect}
-          dateClick={onClick}
-          eventClick={onEventClick}
-          eventClassNames={(event) => {
-            if (event.event.extendedProps.event.id === "new") {
-              return ["new-event"];
-            }
-            return [];
-          }}
-          eventResizeStart={() => setIsDragging(true)}
-          eventResizeStop={() => {
-            setIsDragging(false);
-            setAnchor(
-              document.querySelector(".fc-event.new-event") as HTMLAnchorElement,
-            );
-          }}
-          eventResize={(info) => onEventAction(info)}
-          eventDragStart={() => setIsDragging(true)}
-          eventDragStop={() => {
-            setIsDragging(false);
-            setAnchor(
-              document.querySelector(".fc-event.new-event") as HTMLAnchorElement,
-            );
-          }}
-          eventReceive={(info) => onEventAction(info)}
-          eventDidMount={(info) => {
-            const event = info.event.extendedProps.event as ScheduleCalendarEvent;
-            if (event.id === "new") {
-              setAnchor(info.el as HTMLAnchorElement);
-              setSelected(info.event);
-              return;
-            }
-            if (event.id === selected?.extendedProps.event.id) {
-              setAnchor(info.el as HTMLAnchorElement);
-              setSelected(info.event);
-            }
-          }}
-          dayHeaderContent={DayHeaderContent}
-          slotLabelContent={SlotLabelContent}
-        />
-      </motion.div>
+      {isLoading ? (
+        <div className="w-full h-full flex items-center justify-center">
+          <Spinner className="w-10 h-10 animate-spin" />
+        </div>
+      ) : (
+        <motion.div
+          key={isPrevious ? "previous" : isNext ? "next" : "current"}
+          className="w-full h-full"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+        >
+          <FullCalendar
+            height="100%"
+            initialDate={date}
+            initialView={view}
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
+            ref={ref}
+            events={events}
+            allDaySlot={false}
+            headerToolbar={false}
+            eventContent={EventContent}
+            weekends={showWeekends}
+            selectMinDistance={5}
+            selectMirror={true}
+            slotDuration={{
+              hours: 1
+            }}
+            snapDuration={{
+              minutes: 15,
+            }}
+            expandRows={true}
+            selectable={!anchor}
+            editable={true}
+            droppable={true}
+            select={onSelect}
+            dateClick={onClick}
+            eventClick={onEventClick}
+            eventClassNames={(event) => {
+              if (event.isDragging) {
+                return ["dragging"];
+              }
+              if (event.isMirror) {
+                return [];
+              }
+              if (event.event.extendedProps.event.id === "new") {
+                return ["new-event"];
+              }
+              return [];
+            }}
+            eventResizeStart={() => setIsDragging(true)}
+            eventResizeStop={() => {
+              setIsDragging(false);
+              setAnchor(
+                document.querySelector(".fc-event.new-event")?.parentElement as HTMLDivElement,
+              );
+            }}
+            eventResize={(info) => onEventAction(info)}
+            eventDragStart={() => setIsDragging(true)}
+            eventDragStop={() => {
+              setIsDragging(false);
+              setAnchor(
+                document.querySelector(".fc-event.new-event")?.parentElement as HTMLDivElement,
+              );
+            }}
+            eventDrop={(info) => onEventAction(info)}
+            eventReceive={(info) => onEventAction(info)}
+            eventDidMount={(info) => {
+              if (info.isMirror) {
+                return;
+              }
+              const event = info.event.extendedProps.event as ScheduleCalendarEvent;
+              if (event.id === "new") {
+                setAnchor(info.el.parentElement as HTMLDivElement);
+                setSelected(info.event);
+                return;
+              }
+              if (event.id === selected?.extendedProps.event.id) {
+                setAnchor(info.el.parentElement as HTMLDivElement);
+                setSelected(info.event);
+              }
+            }}
+            dayHeaderContent={DayHeaderContent}
+            slotLabelContent={SlotLabelContent}
+          />
+        </motion.div>
+      )}
       {anchor && selected && isNewEvent && (
         <NewEventPopover
           event={selected}
@@ -268,6 +308,20 @@ function EventContent(props: EventContentArg) {
   const base = props.event;
   const extended = props.event.extendedProps;
   const event = extended.event as ScheduleCalendarEvent;
+
+  if (props.isMirror) {
+    return (
+      <div className="flex flex-col">
+        <p className="font-semibold text-[0.8rem]">
+          {base.title === "" ? "(No Title)" : base.title}
+        </p>
+        <p className="text-xs">
+          {format(base.start!, "hh:mm a")}
+          {base.end ? ` - ${format(base.end!, "hh:mm a")} ` : ""}
+        </p>
+      </div>
+    );
+  }
 
   if (isCourseScheduleCalendarEvent(event)) {
     return (

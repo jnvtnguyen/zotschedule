@@ -71,6 +71,7 @@ CREATE TABLE "schedules" (
     "name" TEXT NOT NULL,
     "is_default" BOOLEAN NOT NULL,
     "show_weekends" BOOLEAN NOT NULL,
+    "view" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
 
     CONSTRAINT "schedules_pkey" PRIMARY KEY ("id")

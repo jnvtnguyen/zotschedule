@@ -2,11 +2,11 @@ import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { callWebSocAPI } from "@/lib/uci/offerings";
-import { Skeleton } from "@/lib/components/ui/skeleton";
 import { ScheduleActionsPanelSearchFilters } from "./filters";
 import { ScheduleActionsPanelOfferingsList } from "./offerings-list";
 import { ScheduleActionsPanelOfferingsHeader } from "./offerings-header";
 import { useScheduleActionsPanel } from "../context";
+import { Spinner } from "@phosphor-icons/react";
 
 export function ScheduleActionsPanelSearchTab() {
   const queryClient = useQueryClient();
@@ -53,16 +53,8 @@ export function ScheduleActionsPanelSearchTab() {
         />
       )}
       {(offerings.isLoading || offerings.isFetching) && (
-        <div className="flex flex-col w-full space-y-1">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
+        <div className="flex h-full w-full items-center justify-center">
+          <Spinner className="w-10 h-10 animate-spin" />
         </div>
       )}
       {!offerings.isLoading && !offerings.isFetching && offerings.data && (

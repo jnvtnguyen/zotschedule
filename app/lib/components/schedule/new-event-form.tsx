@@ -153,6 +153,8 @@ export function NewEventForm({
   });
 
   const repeatability = form.watch("repeatability");
+  const start = form.watch("start");
+  const end = form.watch("end");
   const repeatabilities = useMemo<RepeatabilityOption[]>(() => {
     const options: RepeatabilityOption[] = [
       {
@@ -380,12 +382,12 @@ export function NewEventForm({
               </FormItem>
             )}
           />
-          <div className="flex flex-row gap-1 items-center">
+          <div className="flex flex-row gap-1 items-center w-full">
             <FormField
               control={form.control}
               name="times.start"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem className="flex flex-col w-full">
                   <FormControl>
                     <TimePicker
                       value={new Time(field.value.hour, field.value.minute)}
@@ -424,15 +426,6 @@ export function NewEventForm({
                             end: end
                           }),
                         );
-                        if (added.getDate() !== event.start!.getDate()) {
-                          added = new Date(
-                            event.start!.getFullYear(),
-                            event.start!.getMonth(),
-                            event.start!.getDate(),
-                            23,
-                            59,
-                          );
-                        }
                         onEventChange({
                           start: new Date(
                             event.start!.getFullYear(),
@@ -442,9 +435,9 @@ export function NewEventForm({
                             field.value.minute,
                           ),
                           end: new Date(
-                            event.start!.getFullYear(),
-                            event.start!.getMonth(),
-                            event.start!.getDate(),
+                            event.end!.getFullYear(),
+                            event.end!.getMonth(),
+                            event.end!.getDate(),
                             added.getHours(),
                             added.getMinutes(),
                           )
@@ -456,12 +449,12 @@ export function NewEventForm({
                 </FormItem>
               )}
             />
-            <ArrowRightIcon className="h-4 w-4" />
+            <ArrowRightIcon className="h-8 w-8" />
             <FormField
               control={form.control}
               name="times.end"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem className="flex flex-col w-full">
                   <FormControl>
                     <TimePicker
                       value={new Time(field.value.hour, field.value.minute)}
@@ -494,6 +487,41 @@ export function NewEventForm({
               )}
             />
           </div>
+          {start.getDate() !== end.getDate() && (
+            <FormField
+              control={form.control}
+              name="end"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormControl>
+                    <DatePicker
+                      defaultMonth={field.value}
+                      selected={field.value}
+                      format={(date) => format(date, "PPPP")}
+                      onSelect={(date) => {
+                        if (!date) {
+                          onClose();
+                          return;
+                        }
+                        const end = event.end ? new Date(
+                          date.getFullYear(),
+                          date.getMonth(),
+                          date.getDate(),
+                          event.end.getHours(),
+                          event.end.getMinutes(),
+                        ) : event.start!;
+                        field.onChange(end);
+                        onEventChange({
+                          end
+                        });
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           <FormField
             control={form.control}
             name="repeatability"

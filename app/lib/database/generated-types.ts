@@ -73,6 +73,10 @@ export type Schedule = {
     name: string;
     isDefault: boolean;
     showWeekends: boolean;
+    /**
+     * @kyselyType(ColumnType<import('@/lib/hooks/use-schedule-calendar.tsx').View, string, string>)
+     */
+    view: ColumnType<import('@/lib/hooks/use-schedule-calendar.tsx').View, string, string>;
     userId: string;
 };
 export type SearchAlias = {

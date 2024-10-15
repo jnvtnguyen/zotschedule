@@ -17,19 +17,19 @@ import { Button } from "@/lib/components/ui/button";
 import { useToast } from "@/lib/hooks/use-toast";
 import { useSchedule } from "@/lib/hooks/use-schedule";
 
-const syncShowWeekends = createServerFn(
+const syncSchedule = createServerFn(
   "POST",
   async ({
     schedule,
-    showWeekends,
+    preferences
   }: {
     schedule: Schedule;
-    showWeekends: boolean;
+    preferences: Partial<{ showWeekends: boolean; view: View; }>;
   }) => {
     await database
       .updateTable("schedules")
       .where("id", "=", schedule.id)
-      .set({ showWeekends })
+      .set({ ...Object.fromEntries(Object.entries(preferences).filter(([_, v]) => v !== undefined)) })
       .executeTakeFirstOrThrow();
   },
 );
@@ -53,10 +53,16 @@ export function ScheduleTimePicker() {
     return <></>;
   }
 
-  const onShowWeekendsChange = async (showWeekends: boolean) => {
-    setShowWeekends(showWeekends);
+  const onChange = async ({ showWeekends, view }: Partial<{ showWeekends: boolean; view: View; }>) => {
+    const preferences = { showWeekends, view };
+    if (showWeekends !== undefined) {
+      setShowWeekends(showWeekends);
+    }
+    if (view) {
+      setView(view);
+    }
     try {
-      await syncShowWeekends({ schedule, showWeekends });
+      await syncSchedule({ schedule, preferences });
     } catch (error) {
       toast({
         title: "Uh oh! Something went wrong.",
@@ -75,19 +81,19 @@ export function ScheduleTimePicker() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
-        <DropdownMenuItem onClick={() => setView("timeGridDay")}>
+        <DropdownMenuItem onClick={() => onChange({ view: "timeGridDay" })}>
           Day
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setView("timeGridWeek")}>
+        <DropdownMenuItem onClick={() => onChange({ view: "timeGridWeek" })}>
           Week
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setView("dayGridMonth")}>
+        <DropdownMenuItem onClick={() => onChange({ view: "dayGridMonth" })}>
           Month
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuCheckboxItem
           checked={showWeekends}
-          onCheckedChange={onShowWeekendsChange}
+          onCheckedChange={(checked) => onChange({ showWeekends: checked })}
         >
           Show weekends
         </DropdownMenuCheckboxItem>

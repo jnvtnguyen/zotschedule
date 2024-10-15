@@ -10,7 +10,6 @@ import {
   AuthUserContext,
   createAuthUserStore,
 } from "@/lib/hooks/use-auth-user";
-import { getScheduleCalendarEventsQuery } from "@/lib/hooks/use-schedule-calendar-events";
 import customFullCalendarCSS from "@/lib/components/schedule/custom-fullcalendar.css?url";
 import { ScheduleView } from "@/lib/components/schedule";
 
@@ -30,16 +29,6 @@ export const Route = createFileRoute("/schedule")({
     await queryClient.prefetchQuery(getWebSocTermOptionsQuery);
     await queryClient.prefetchQuery(getSearchAliasesQuery);
     await queryClient.prefetchQuery(getTermCalendarsQuery);
-
-    const schedules = await queryClient.ensureQueryData(
-      getSchedulesQuery(session.user.id),
-    );
-    const schedule = schedules.find((schedule) => schedule.isDefault);
-    if (schedule) {
-      await queryClient.prefetchQuery(
-        getScheduleCalendarEventsQuery(schedule.id),
-      );
-    }
 
     return {
       session,

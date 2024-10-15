@@ -9,7 +9,7 @@
 }
 
 .fc-timegrid-event .fc-event-main {
-  padding: 0px 5px 5px 5px;
+  padding: 0px 4px 4px 4px;
 }
 
 .fc-event.new-event {
@@ -45,4 +45,21 @@
 
 td[role="presentation"] {
   border: none !important;
+}
+
+.fc-event-mirror {
+  background-color: #255799 !important;
+  border: none !important;
+}
+
+.fc-timegrid-col.fc-day-today {
+  @apply bg-primary-foreground !important;
+}
+
+.fc-col-header-cell.fc-day-today {
+  @apply border-b-primary !important;
+}
+
+.fc-event.dragging {
+  cursor: move !important;
 }
