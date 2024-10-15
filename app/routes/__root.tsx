@@ -44,7 +44,7 @@ export const Route = createRootRouteWithContext<{
 
 function RootComponent() {
   const router = useRouter();
-  const isScheduleRoute = router.getMatch("/schedule");
+  const isScheduleRoute = router.getMatch("/");
   const { session } = Route.useRouteContext();
   router.subscribe(
     "onBeforeLoad",

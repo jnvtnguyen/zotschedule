@@ -18,7 +18,7 @@ export const Route = createFileRoute("/auth/login")({
   component: Login,
   beforeLoad: async ({ context: { session } }) => {
     if (session.isLoggedIn && session.user) {
-      throw redirect({ to: "/schedule" });
+      throw redirect({ to: "/" });
     }
   },
 });

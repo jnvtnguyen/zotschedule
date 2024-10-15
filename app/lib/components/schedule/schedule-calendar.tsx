@@ -161,7 +161,6 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
       ["schedule-events", schedule.id],
       (events: ScheduleEvent[]) => {
         return events.map((e) => {
-          console.log(info.event.start, info.event.end)
           if (e.id === event.id && !isCourseScheduleCalendarEvent(event)) {
             return {
               ...e,

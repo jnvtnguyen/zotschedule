@@ -145,8 +145,8 @@ export function NewEventForm({
           minute: event.extendedProps.event.start.getMinutes(),
         },
         end: {
-          hour: event.extendedProps.event.end.getHours(),
-          minute: event.extendedProps.event.end.getMinutes(),
+          hour: event.extendedProps.event.end?.getHours(),
+          minute: event.extendedProps.event.end?.getMinutes(),
         }
       },
     },
@@ -248,7 +248,6 @@ export function NewEventForm({
 
   useEffect(() => {
     form.setValue("end", event.extendedProps.event.end);
-    console.log(event.extendedProps.event.end)
     form.setValue("times.end", {
       hour: event.extendedProps.event.end.getHours(),
       minute: event.extendedProps.event.end.getMinutes(),
@@ -435,13 +434,7 @@ export function NewEventForm({
                             field.value.hour,
                             field.value.minute,
                           ),
-                          end: new Date(
-                            event.end!.getFullYear(),
-                            event.end!.getMonth(),
-                            event.end!.getDate(),
-                            added.getHours(),
-                            added.getMinutes(),
-                          )
+                          end: added
                         });
                       }}
                     />

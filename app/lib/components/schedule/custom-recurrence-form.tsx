@@ -120,7 +120,6 @@ export function CustomRecurrenceForm({
   }, [interval]);
 
   const onSubmit = (data: z.infer<typeof customRecurrenceFormSchema>) => {
-    console.log(data)
     onClose({
       ...data,
       ends: isEnding === "never" ? undefined : data.ends,

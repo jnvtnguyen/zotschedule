@@ -270,7 +270,6 @@ export const useCalendarEvents = (
               ...rules.end.options,
               ...WEEKLY_REPEATABILITY(meeting.end),
             };
-            console.log(rules.begin, rules.end);
           }
 
           if (meeting.repeatability === "WEEKDAY") {

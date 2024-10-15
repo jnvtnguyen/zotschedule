@@ -59,6 +59,7 @@ export function NewEventPopover({
       }
     }
     if (rest) {
+      console.log(rest)
       queryClient.setQueryData(
         ["schedule-events", schedule.id],
         (events: ScheduleCalendarEvent[]) => {

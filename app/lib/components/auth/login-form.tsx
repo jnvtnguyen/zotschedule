@@ -82,7 +82,7 @@ export function LoginForm() {
         return;
       }
       await createSessionForUser(result.user);
-      navigate({ to: "/schedule" });
+      navigate({ to: "/" });
     } catch (error) {
       toast({
         title: "Uh oh! Something went wrong.",
