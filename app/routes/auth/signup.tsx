@@ -25,7 +25,7 @@ export const Route = createFileRoute("/auth/signup")({
 
 function Signup() {
   return (
-    <div className="mx-auto max-w-sm mt-56">
+    <div className="m-auto max-w-sm">
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">Sign up</CardTitle>
