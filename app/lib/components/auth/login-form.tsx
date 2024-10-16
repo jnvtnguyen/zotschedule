@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
 import { getEvent, setResponseStatus } from "vinxi/http";
 import { verify } from "@node-rs/argon2";
+import { Spinner } from "@phosphor-icons/react";
 
 import { database } from "@/lib/database";
 import { createSessionForUser } from "@/lib/auth";
@@ -126,7 +127,12 @@ export function LoginForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Login</Button>
+        <Button type="submit">
+          {form.formState.isSubmitting ?
+            <Spinner className="animate-spin w-5 h-5" /> :
+            "Log in"
+          }
+        </Button>
       </form>
     </Form>
   );

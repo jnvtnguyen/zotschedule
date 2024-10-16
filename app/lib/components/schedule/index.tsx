@@ -18,6 +18,8 @@ type ScheduleViewProps = {
   user: AuthUser;
 };
 
+const today = new Date();
+
 export function ScheduleView({ user }: ScheduleViewProps) {
   const schedule = useSchedule((state) => state.schedule);
   const [width, setWidth] = useState(0);
@@ -30,7 +32,7 @@ export function ScheduleView({ user }: ScheduleViewProps) {
     <ScheduleCalendarContext.Provider
       value={createScheduleCalendarStore(
         schedule.view,
-        new Date(),
+        today,
         schedule.showWeekends,
       )}
     >
@@ -49,7 +51,7 @@ export function ScheduleView({ user }: ScheduleViewProps) {
           <ResizablePanel
             minSize={25}
             defaultSize={35}
-            className="h-[calc(100vh-4.8rem)] p-4"
+            className="h-[calc(100vh-4rem)]"
           >
             <ScheduleActionsPanel />
           </ResizablePanel>

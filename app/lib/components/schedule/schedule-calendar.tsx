@@ -35,7 +35,6 @@ import { NewEventPopover } from "./new-event-popover";
 import {
   isCourseScheduleCalendarEvent,
   ScheduleCalendarEvent,
-  useScheduleCalendarEvents,
 } from "@/lib/hooks/use-schedule-calendar-events";
 import { cn } from "@/lib/utils/style";
 import { CustomScheduleEventRepeatability } from "@/lib/database/generated-types";
@@ -71,6 +70,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   const queryClient = useQueryClient();
   const view = useScheduleCalendar((state) => state.view);
   const date = useScheduleCalendar((state) => state.date);
+  console.log(date)
   const showWeekends = useScheduleCalendar((state) => state.showWeekends);
   const { events, isLoading } = useCalendarEvents(schedule.id, view, date);
   const ref = useRef<FullCalendar>(null);

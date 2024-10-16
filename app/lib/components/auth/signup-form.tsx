@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
 import { hash } from "@node-rs/argon2";
+import { Spinner } from "@phosphor-icons/react";
 
 import { database } from "@/lib/database";
 import {
@@ -166,7 +167,12 @@ export function SignupForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Sign up</Button>
+        <Button type="submit">
+          {form.formState.isSubmitting ?
+            <Spinner className="animate-spin w-5 h-5" /> :
+            "Sign up"
+          }
+        </Button>
       </form>
     </Form>
   );

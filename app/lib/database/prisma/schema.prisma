@@ -73,7 +73,7 @@ model UserSession {
   id String @id @default(uuid())
 
   user_id    String
-  user       User     @relation(fields: [user_id], references: [id])
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   expires_at DateTime
 
   @@map("user_sessions")
@@ -88,7 +88,7 @@ model Schedule {
   view        String
 
   user_id String
-  user    User   @relation(fields: [user_id], references: [id])
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   course_events CourseScheduleEvent[]
   custom_events CustomScheduleEvent[]
@@ -100,7 +100,7 @@ model CourseScheduleEvent {
   id String @id @default(dbgenerated("gen_random_uuid()"))
 
   schedule_id String
-  schedule    Schedule @relation(fields: [schedule_id], references: [id])
+  schedule    Schedule @relation(fields: [schedule_id], references: [id], onDelete: Cascade)
   section_code Int
   term String
   color String
@@ -121,7 +121,7 @@ model CustomScheduleEvent {
   id String @id @default(dbgenerated("gen_random_uuid()"))
 
   schedule_id String
-  schedule    Schedule @relation(fields: [schedule_id], references: [id])
+  schedule    Schedule @relation(fields: [schedule_id], references: [id], onDelete: Cascade)
   title String
   description String
   start DateTime

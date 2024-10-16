@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { getEvent, setResponseStatus } from "vinxi/http";
+import { Spinner } from "@phosphor-icons/react";
 
 import { Schedule } from "@/lib/database/types";
 import { database } from "@/lib/database";
@@ -141,7 +142,13 @@ export function CreateScheduleForm({
               Cancel
             </Button>
           )}
-          <Button type="submit">Create</Button>
+          <Button type="submit">
+            {form.formState.isSubmitting ? (
+              <Spinner className="w-5 h-5 animate-spin" />
+            ) : (
+              "Create"
+            )}
+          </Button>
         </div>
       </form>
     </Form>

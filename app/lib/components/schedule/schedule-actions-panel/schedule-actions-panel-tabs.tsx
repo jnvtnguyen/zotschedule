@@ -38,19 +38,19 @@ export function ScheduleActionsPanelTabs() {
         </TabsList>
         <TabsContent
           value="search"
-          className="h-[calc(100%-2.8rem)] w-full overflow-y-auto"
+          className="h-[calc(100%-2.8rem)] w-full overflow-y-auto px-2"
         >
           <ScheduleActionsPanelSearchTab />
         </TabsContent>
         <TabsContent
           value="events"
-          className="h-[calc(100%-2.8rem)] w-full overflow-y-auto"
+          className="h-[calc(100%-2.8rem)] w-full overflow-hidden p-2"
         >
           <ScheduleActionsPanelEventsTab />
         </TabsContent>
         <TabsContent
           value="map"
-          className="h-[calc(100%-2.8rem)] w-full overflow-y-auto"
+          className="h-[calc(100%-2.8rem)] w-full overflow-hidden p-2"
         >
           <ScheduleActionsPanelMapTab />
         </TabsContent>
