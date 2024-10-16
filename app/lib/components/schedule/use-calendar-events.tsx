@@ -139,7 +139,8 @@ export const useCalendarEvents = (
   const events = useScheduleCalendarEvents(scheduleId);
   const terms = useTermCalendars();
 
-  return useMemo<EventInput[]>(() => {
+  return {
+    events: useMemo<EventInput[]>(() => {
     if (
       events.status === "pending" ||
       events.status === "error" ||
@@ -345,5 +346,7 @@ export const useCalendarEvents = (
       })
       .flat()
       .filter((meeting) => meeting !== undefined);
-  }, [events.data, events.status, terms.data, terms.status, date, view]);
+  }, [events.data, events.status, terms.data, terms.status, date, view]),
+  isLoading: events.status === "pending" || terms.status === "pending",
+};
 };

@@ -21,7 +21,6 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin, {
   DateClickArg,
-  EventReceiveArg,
   EventResizeDoneArg,
 } from "@fullcalendar/interaction";
 import { Spinner } from "@phosphor-icons/react";
@@ -64,10 +63,6 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   const [anchor, setAnchor] = useState<HTMLDivElement | undefined>();
   const [selected, setSelected] = useState<EventImpl | undefined>();
   const [isDragging, setIsDragging] = useState(false);
-  const [isPrevious, setIsPrevious] = useState(false);
-  const [isNext, setIsNext] = useState(false);
-  const [isFirstMount, setIsFirstMount] = useState(true);
-  const { isLoading } = useScheduleCalendarEvents(schedule.id);
   const animations = new Controller({
     opacity: 0,
     transform: "translateY(10px)",
@@ -77,7 +72,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   const view = useScheduleCalendar((state) => state.view);
   const date = useScheduleCalendar((state) => state.date);
   const showWeekends = useScheduleCalendar((state) => state.showWeekends);
-  const events = useCalendarEvents(schedule.id, view, date);
+  const { events, isLoading } = useCalendarEvents(schedule.id, view, date);
   const ref = useRef<FullCalendar>(null);
 
   const reset = async (anchor?: HTMLDivElement, selected?: EventImpl) => { 
@@ -104,20 +99,11 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   useEffect(() => {
     queueMicrotask(() => {
       if (ref.current) {
-        const current = ref.current.getApi().getDate();
         ref.current.getApi().gotoDate(date);
-        if (date < current) {
-          setIsPrevious(true);
-          setTimeout(() => {
-            setIsPrevious(false);
-          }, 1);
-        }
-        if (date > current) {
-          setIsNext(true);
-          setTimeout(() => {
-            setIsNext(false);
-          }, 1);
-        }
+        animations.start({
+          opacity: 1,
+          transform: "translateY(0)",
+        });
       }
     });
   }, [date]);
@@ -143,7 +129,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
       opacity: 1,
       transform: "translateY(0)",
     });
-  }, [isLoading, isPrevious, isNext])
+  }, [isLoading])
 
   const onSelect = (info: DateSelectArg) => {
     let start = info.start;
@@ -220,6 +206,12 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
             }}
             snapDuration={{
               minutes: 15,
+            }}
+            slotMinTime={{
+              hours: 2
+            }}
+            slotMaxTime={{
+              hours: 26
             }}
             expandRows={true}
             selectable={!anchor}
