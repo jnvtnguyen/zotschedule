@@ -9,7 +9,6 @@ export default defineConfig({
       EnvironmentPlugin([
         "COMBINED_ORAMA_ENDPOINT",
         "COMBINED_ORAMA_API_KEY",
-        "GOOGLE_MAPS_API_KEY",
       ]),
     ],
   },
