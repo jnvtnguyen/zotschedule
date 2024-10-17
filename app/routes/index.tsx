@@ -22,10 +22,10 @@ export const Route = createFileRoute('/')({
     if (!session.isLoggedIn || !session.user) {
       throw redirect({ to: '/auth/login' })
     }
-    await queryClient.prefetchQuery(getSchedulesQuery(session.user.id))
-    await queryClient.prefetchQuery(getWebSocTermOptionsQuery)
-    await queryClient.prefetchQuery(getSearchAliasesQuery)
-    await queryClient.prefetchQuery(getTermCalendarsQuery)
+    await queryClient.prefetchQuery(getSchedulesQuery(session.user.id));
+    await queryClient.prefetchQuery(getWebSocTermOptionsQuery);
+    await queryClient.prefetchQuery(getSearchAliasesQuery);
+    await queryClient.prefetchQuery(getTermCalendarsQuery);
 
     return {
       session,

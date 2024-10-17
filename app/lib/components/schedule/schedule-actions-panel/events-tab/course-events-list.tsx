@@ -1,20 +1,31 @@
 import { useMemo } from "react";
 
 import { CourseScheduleCalendarEvent } from "@/lib/hooks/use-schedule-calendar-events";
-import { ScheduleActionsPanelCourseEventsListCourseEvent } from "./course-event";
-import { Schedule } from "@/lib/database/types";
 import { groupBy } from "@/lib/utils/general";
 import { SECTION_TYPE_ORDER } from "@/lib/uci/offerings/types";
+import { ScheduleActionsPanelEventsListEvent } from "./event";
 
 type ScheduleActionsPanelCourseEventsListProps = {
   events: CourseScheduleCalendarEvent[];
-  schedule: Schedule;
 };
 
 export function ScheduleActionsPanelCourseEventsList({
   events,
-  schedule,
 }: ScheduleActionsPanelCourseEventsListProps) {
+  if (events.length === 0) {
+    return (
+      <div className="p-4 flex items-center justify-center">
+        <div className="max-w-xl text-center space-y-2">
+          <h3 className="text-lg font-semibold">No Course Events</h3>
+          <p className="text-sm">
+            Looks like you haven't saved any course events yet. Search for a course
+            in the search tab above and add it to your schedule to see the course here.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const grouped = useMemo(() => {
     return groupBy(
       events,
@@ -40,7 +51,7 @@ export function ScheduleActionsPanelCourseEventsList({
                     SECTION_TYPE_ORDER.indexOf(b.info.section.type),
                 )
                 .map((event) => (
-                  <ScheduleActionsPanelCourseEventsListCourseEvent
+                  <ScheduleActionsPanelEventsListEvent
                     key={event.id}
                     event={event}
                   />

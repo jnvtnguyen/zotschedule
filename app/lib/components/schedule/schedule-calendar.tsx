@@ -31,7 +31,7 @@ import { useScheduleCalendar } from "@/lib/components/schedule/context";
 import { useSchedule } from "@/lib/hooks/use-schedule";
 import { ScheduleEvent } from "@/lib/database/types";
 import { DEFAULT_EVENT_COLOR } from "@/lib/uci/events/types";
-import { COMMON_DAYS_TO_RRULE_DAYS, useCalendarEvents } from "./use-calendar-events";
+import { useCalendarEvents } from "./use-calendar-events";
 import { NewEventPopover } from "./new-event-popover";
 import {
   isCourseScheduleCalendarEvent,
@@ -45,14 +45,21 @@ type ScheduleCalendarProps = {
   width: number;
 };
 
-const NEW_EVENT = (start: Date, end: Date) => ({
+export const NEW_EVENT = (start: Date, end: Date, scheduleId: string) => ({
   id: "new",
+  scheduleId,
   title: "",
   description: "",
   start: start,
   end: end,
   color: DEFAULT_EVENT_COLOR,
+  frequency: null,
+  interval: null,
+  days: [],
+  weeks: [],
+  months: [],
   repeatability: CustomScheduleEventRepeatability.NONE,
+  until: null
 });
 
 export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
@@ -64,9 +71,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   const [selected, setSelected] = useState<EventImpl | EventApi | undefined>();
   const [isDragging, setIsDragging] = useState(false);
   const animations = new Controller({
-    opacity: 0,
-    transform: "translateY(10px)",
-  })
+  });
   const isNewEvent = selected?.extendedProps.event.id === "new";
   const queryClient = useQueryClient();
   const view = useScheduleCalendar((state) => state.view);
@@ -76,10 +81,6 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   const setEditing = useScheduleCalendar((state) => state.setEditing);
   const { events, isLoading } = useCalendarEvents(schedule.id, view, date);
   const ref = useRef<FullCalendar>(null);
-
-  useEffect(() => {
-    console.log(events)
-  }, [events]);
 
   const reset = async (anchor?: HTMLDivElement, selected?: EventImpl | EventApi, skip?: boolean) => {
     setAnchor(anchor);
@@ -113,8 +114,6 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
       if (ref.current) {
         ref.current.getApi().gotoDate(date);
         animations.start({
-          opacity: 1,
-          transform: "translateY(0)",
         });
       }
     });
@@ -138,8 +137,6 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
 
   useEffect(() => {
     animations.start({
-      opacity: 1,
-      transform: "translateY(0)",
     });
   }, [isLoading]);
 
@@ -169,7 +166,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
     queryClient.setQueryData(
       ["schedule-custom-events", schedule.id],
       (events: ScheduleEvent[]) => {
-        return [...events, NEW_EVENT(start, end)];
+        return [...events, NEW_EVENT(start, end, schedule.id)];
       },
     );
   };
@@ -180,7 +177,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
     queryClient.setQueryData(
       ["schedule-custom-events", schedule.id],
       (events: ScheduleEvent[]) => {
-        return [...events, NEW_EVENT(start, end)];
+        return [...events, NEW_EVENT(start, end, schedule.id)];
       },
     );
   };
@@ -213,7 +210,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   };
 
   return (
-    <div className="flex flex-col w-full h-full space-y-2">
+    <div className="flex flex-col w-full h-full space-y-2 pb-4">
       {isLoading ? (
         <div className="w-full h-full flex items-center justify-center">
           <Spinner className="w-10 h-10 animate-spin" />
@@ -327,7 +324,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   );
 }
 
-const getFormattedRange = (start: Date, end: Date | null) => {
+export const getFormattedRange = (start: Date, end: Date | null) => {
   const formatted = {
     start: '',
     end: ''

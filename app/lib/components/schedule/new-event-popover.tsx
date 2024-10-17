@@ -86,7 +86,7 @@ export function NewEventPopover({
       isDragging={isDragging}
     >
       <NewEventForm
-        event={event}
+        event={event.extendedProps.event}
         schedule={schedule}
         onEventChange={onEventChange}
         onClose={onClose}

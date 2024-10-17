@@ -40,14 +40,18 @@ const updateEventColor = createServerFn(
 
 type EventColorPickerProps = {
   event: ScheduleEvent;
+  onChange?: (color: string) => void;
   icon?: "palette" | "circle";
   isInDatabase?: boolean;
+  isLocal?: boolean;
 };
 
 export function EventColorPicker({
   event,
+  onChange,
   icon = "palette",
   isInDatabase = true,
+  isLocal = true
 }: EventColorPickerProps) {
   const { toast } = useToast();
   const color = useMemo(() => event.color, [event.color]);
@@ -58,6 +62,12 @@ export function EventColorPicker({
   }
 
   const onColorChange = async (color: any) => {
+    onChange?.(color.hex);
+
+    if (!isLocal) {
+      return;
+    }
+
     const key = isCourseScheduleEvent(event) ? "course" : "custom";
     queryClient.setQueryData(
       [`schedule-${key}-events`, schedule.id],

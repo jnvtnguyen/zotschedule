@@ -46,7 +46,7 @@ export function ScheduleActionsPanelTabs() {
         </TabsContent>
         <TabsContent
           value="events"
-          className="h-[calc(100%-2.8rem)] w-full overflow-hidden p-2"
+          className="h-[calc(100%-2.8rem)] w-full overflow-hidden px-4 py-2"
         >
           <ScheduleActionsPanelEventsTab />
         </TabsContent>

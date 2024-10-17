@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { addMonths, addWeeks, parse, subDays } from "date-fns";
+import { addDays, addMonths, addWeeks, parse, subDays } from "date-fns";
 import { EventInput } from "@fullcalendar/core";
 
 import { useScheduleCalendarCourseEvents, useScheduleCalendarCustomEvents } from "@/lib/hooks/use-schedule-calendar-events";
@@ -7,7 +7,7 @@ import { useTermCalendars } from "@/lib/hooks/use-term-calendars";
 import { TERM_CODE_DICTIONARY } from "@/lib/uci/courses/types";
 import { WebSocMeeting } from "@/lib/uci/offerings/types";
 import { isCourseScheduleEvent } from "@/lib/uci/events/types";
-import { View } from "@/lib/components/schedule/context";
+import { useScheduleCalendar, View } from "@/lib/components/schedule/context";
 import { Frequency, RRule } from "rrule";
 
 export const COMMON_DAYS_TO_RRULE_DAYS: Record<
@@ -138,6 +138,7 @@ export const useCalendarEvents = (
 ) => {
   const courses = useScheduleCalendarCourseEvents(scheduleId);
   const customs = useScheduleCalendarCustomEvents(scheduleId);
+  const editing = useScheduleCalendar((state) => state.editing);
   const terms = useTermCalendars();
 
   return {
@@ -225,6 +226,8 @@ export const useCalendarEvents = (
           });
         }
 
+        const editable = (editing?.id === meeting.id || meeting.id === "new");
+
         if (meeting.repeatability !== "NONE" && meeting.id !== "new") {
           let end = meeting.until;
           if (!end) {
@@ -235,7 +238,7 @@ export const useCalendarEvents = (
               end = addWeeks(date, 1);
             }
             if (view === "timeGridDay") {
-              end = date;
+              end = addDays(date, 1);
             }
           }
 
@@ -334,7 +337,7 @@ export const useCalendarEvents = (
               frequency: rules.begin.options.freq,
               days: rules.begin.options.byweekday,
               until: meeting.until,
-              editable: true
+              editable
             };
           });
         }
@@ -344,12 +347,12 @@ export const useCalendarEvents = (
           end: meeting.end,
           color: meeting.color,
           event: meeting,
-          editable: true
+          editable
         };
       })
       .flat()
       .filter((meeting) => meeting !== undefined);
-  }, [customs.data, customs.status, courses.data, courses.status, terms.data, terms.status, date, view]),
+  }, [customs.data, customs.status, courses.data, courses.status, terms.data, terms.status, date, view, editing]),
   isLoading: customs.status === "pending" || courses.status === "pending" || terms.status === "pending",
 };
 };

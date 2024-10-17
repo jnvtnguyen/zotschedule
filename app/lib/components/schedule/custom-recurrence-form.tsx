@@ -36,6 +36,17 @@ const baseCustomRecurrenceFormSchema = z.object({
   ends: z.date().optional(),
 });
 
+const secondlyRecurrenceFormSchema = z.object({
+  frequency: z.literal(Frequency.SECONDLY),
+});
+
+const minutelyRecurrenceFormSchema = z.object({
+  frequency: z.literal(Frequency.MINUTELY),
+});
+
+const hourlyRecurrenceFormSchema = z.object({
+  frequency: z.literal(Frequency.HOURLY),
+});
 
 const dailyRecurrenceFormSchema = z.object({
   frequency: z.literal(Frequency.DAILY),
@@ -56,6 +67,9 @@ const yearlyRecurrenceFormSchema = z.object({
 
 const customRecurrenceFormSchema = z
   .discriminatedUnion("frequency", [
+    secondlyRecurrenceFormSchema,
+    minutelyRecurrenceFormSchema,
+    hourlyRecurrenceFormSchema,
     dailyRecurrenceFormSchema,
     weeklyRecurrenceFormSchema,
     monthlyRecurrenceFormSchema,

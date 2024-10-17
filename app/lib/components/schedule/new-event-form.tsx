@@ -5,13 +5,12 @@ import { format, intervalToDuration, add } from "date-fns";
 import { ArrowRightIcon } from "@radix-ui/react-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Time } from "@internationalized/date";
-import { EventImpl } from "@fullcalendar/core/internal";
 import { createServerFn } from "@tanstack/start";
 import { useQueryClient } from "@tanstack/react-query";
 import { UTCDate } from "@date-fns/utc";
 import superjson from "superjson";
 import { Frequency } from "rrule";
-import { EventApi } from "@fullcalendar/core";
+import { Spinner } from "@phosphor-icons/react";
 
 import { database } from "@/lib/database";
 import { Schedule } from "@/lib/database/types";
@@ -117,9 +116,10 @@ const save = createServerFn("POST", async (payload: string) => {
 });
 
 type NewEventFormProps = {
-  event: EventImpl | EventApi;
+  event: CustomScheduleCalendarEvent;
   schedule: Schedule;
-  onEventChange: (event: Partial<CustomScheduleCalendarEvent>) => void;
+  isLocalColor?: boolean;
+  onEventChange?: (event: Partial<CustomScheduleCalendarEvent>) => void;
   onClose: () => void;
 };
 
@@ -133,6 +133,7 @@ const isEmptyTitle = (title: string) => title.length === 0 || title === "(No Tit
 export function NewEventForm({
   event,
   schedule,
+  isLocalColor = true,
   onEventChange,
   onClose,
 }: NewEventFormProps) {
@@ -142,13 +143,13 @@ export function NewEventForm({
   const [custom, setCustom] = useState<
     CustomRecurrence | undefined
   >(
-    event.extendedProps.event.repeatability ===
+    event.repeatability ===
       CustomScheduleEventRepeatability.CUSTOM
       ? {
-          frequency: event.extendedProps.event.frequency,
-          interval: event.extendedProps.event.interval,
-          days: event.extendedProps.event.days,
-          ends: event.extendedProps.event.ends,
+          frequency: event.frequency!,
+          interval: event.interval!,
+          days: event.days!,
+          ends: event.end,
         }
       : undefined,
   );
@@ -160,20 +161,20 @@ export function NewEventForm({
   const form = useForm<z.infer<typeof newEventFormSchema>>({
     resolver: zodResolver(newEventFormSchema),
     defaultValues: {
-      id: event.extendedProps.event.id,
-      color: event.extendedProps.event.color,
-      title: isEmptyTitle(event.extendedProps.event.title) ? "" : event.extendedProps.event.title,
-      start: event.extendedProps.event.start,
-      end: event.extendedProps.event.end,
-      repeatability: event.extendedProps.event.repeatability,
+      id: event.id,
+      color: event.color,
+      title: isEmptyTitle(event.title) ? "" : event.title,
+      start: event.start,
+      end: event.end,
+      repeatability: event.repeatability,
       times: {
         start: {
-          hour: event.extendedProps.event.start.getHours(),
-          minute: event.extendedProps.event.start.getMinutes(),
+          hour: event.start.getHours(),
+          minute: event.start.getMinutes(),
         },
         end: {
-          hour: event.extendedProps.event.end?.getHours(),
-          minute: event.extendedProps.event.end?.getMinutes(),
+          hour: event.end.getHours(),
+          minute: event.end.getMinutes(),
         }
       },
     },
@@ -250,14 +251,14 @@ export function NewEventForm({
       return;
     }
     setSavedRepeatability(repeatability);
-    onEventChange({
+    onEventChange?.({
       repeatability,
     });
     if (
       repeatability === CustomScheduleEventRepeatability.CUSTOM &&
       custom
     ) {
-      onEventChange({
+      onEventChange?.({
         ...custom,
         months: [],
         weeks: [],
@@ -266,20 +267,20 @@ export function NewEventForm({
   }, [repeatability]);
 
   useEffect(() => {
-    form.setValue("start", event.extendedProps.event.start);
+    form.setValue("start", event.start);
     form.setValue("times.start", {
-      hour: event.extendedProps.event.start.getHours(),
-      minute: event.extendedProps.event.start.getMinutes(),
+      hour: event.start.getHours(),
+      minute: event.start.getMinutes(),
     });
-  }, [event.extendedProps.event.start]);
+  }, [event.start]);
 
   useEffect(() => {
-    form.setValue("end", event.extendedProps.event.end);
+    form.setValue("end", event.end);
     form.setValue("times.end", {
-      hour: event.extendedProps.event.end.getHours(),
-      minute: event.extendedProps.event.end.getMinutes(),
+      hour: event.end.getHours(),
+      minute: event.end.getMinutes(),
     });
-  }, [event.extendedProps.event.end]);
+  }, [event.end]);
 
   const onSubmit = async (data: z.infer<typeof newEventFormSchema>) => {
     try {
@@ -339,7 +340,7 @@ export function NewEventForm({
                     <Input
                       onChange={(e) => {
                         onChange(e.target.value);
-                        onEventChange({
+                        onEventChange?.({
                           title: e.target.value,
                         });
                       }}
@@ -354,12 +355,19 @@ export function NewEventForm({
             <FormField
               control={form.control}
               name="color"
-              render={() => (
+              render={({ field }) => (
                 <FormItem>
                   <FormControl>
                     <EventColorPicker
-                      event={event.extendedProps.event}
+                      onChange={(color) => {
+                        field.onChange(color);
+                        onEventChange?.({
+                          color,
+                        });
+                      }}
+                      event={event}
                       isInDatabase={false}
+                      isLocal={isLocalColor}
                       icon="circle"
                     />
                   </FormControl>
@@ -398,7 +406,7 @@ export function NewEventForm({
                         event.end.getMinutes(),
                       ) : start;
                       field.onChange(start);
-                      onEventChange({
+                      onEventChange?.({
                         start,
                         end,
                       });
@@ -453,7 +461,7 @@ export function NewEventForm({
                             end: end
                           }),
                         );
-                        onEventChange({
+                        onEventChange?.({
                           start: new Date(
                             event.start!.getFullYear(),
                             event.start!.getMonth(),
@@ -497,7 +505,7 @@ export function NewEventForm({
                           form.setValue("end", event.end!);
                           return;
                         }
-                        onEventChange({
+                        onEventChange?.({
                           end: end
                         });
                       }}
@@ -532,7 +540,7 @@ export function NewEventForm({
                           event.end.getMinutes(),
                         ) : event.start!;
                         field.onChange(end);
-                        onEventChange({
+                        onEventChange?.({
                           end
                         });
                       }}
@@ -547,7 +555,7 @@ export function NewEventForm({
             control={form.control}
             name="repeatability"
             render={({ field }) => (
-              <FormItem className="flex flex-col">
+              <FormItem className="w-full">
                 <FormControl>
                   <Select
                     value={field.value}
@@ -586,7 +594,13 @@ export function NewEventForm({
             <Button variant="outline" onClick={() => onClose()} type="button">
               Cancel
             </Button>
-            <Button type="submit">Save</Button>
+            <Button type="submit">
+              {form.formState.isSubmitting ? (
+                <Spinner className="w-5 h-5 animate-spin" />
+              ) : (
+                "Save"
+              )}
+            </Button>
           </div>
         </form>
       </Form>
@@ -604,36 +618,5 @@ export function NewEventForm({
         }}
       />
     </>
-  );
-}
-
-function CustomTimeTextField(props: any) {
-  const {
-    id,
-    ref,
-    ownerState,
-    sx,
-    inputProps: { onKeyDown, ...inputProps },
-    InputProps,
-    error,
-    onBlur,
-    ...other
-  } = props;
-
-  return (
-    <Input
-      id={id}
-      ref={ref}
-      onBlur={onBlur}
-      onKeyDown={(e) => {
-        onKeyDown(e);
-        if (e.key === "Enter") {
-          e.preventDefault();
-          onBlur(e);
-        }
-      }}
-      {...inputProps}
-      {...other}
-    />
   );
 }
