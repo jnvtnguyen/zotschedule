@@ -13,6 +13,6 @@ export default defineConfig({
     ],
   },
   deployment: {
-    preset: "bun"
+    preset: "node-server"
   },
 });
