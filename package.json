@@ -4,9 +4,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "dev": "vinxi dev",
-    "build": "vinxi build",
-    "start": "vinxi start",
+    "dev": "bunx --bun vinxi dev",
+    "build": "bunx --bun vinxi build",
+    "start": "bunx --bun vinxi start",
     "generate-course-data": "bun run ./app/lib/uci/courses/generate-data.ts",
     "generate-prerequisite-data": "bun run ./app/lib/uci/prerequisites/generate-data.ts",
     "generate-calendar-data": "bun run ./app/lib/uci/calendars/generate-data.ts",
