@@ -58,8 +58,9 @@ export function EventColorPicker({
   }
 
   const onColorChange = async (color: any) => {
+    const key = isCourseScheduleEvent(event) ? "course" : "custom";
     queryClient.setQueryData(
-      ["schedule-events", schedule.id],
+      [`schedule-${key}-events`, schedule.id],
       (events: ScheduleEvent[]) => {
         return events.map((_event) => {
           if (_event.id === event.id) {

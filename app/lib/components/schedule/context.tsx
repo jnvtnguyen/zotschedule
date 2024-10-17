@@ -1,6 +1,8 @@
 import { create, useStore } from "zustand";
 import { createContext, useContext } from "react";
 
+import { CustomScheduleCalendarEvent } from "@/lib/hooks/use-schedule-calendar-events";
+
 export type View = "dayGridMonth" | "timeGridWeek" | "timeGridDay" | "listYear";
 
 type ScheduleCalendarState = {
@@ -10,6 +12,8 @@ type ScheduleCalendarState = {
   setView: (view: View) => void;
   showWeekends: boolean;
   setShowWeekends: (weekends: boolean) => void;
+  editing?: CustomScheduleCalendarEvent;
+  setEditing: (editing?: CustomScheduleCalendarEvent) => void;
 };
 
 export const createScheduleCalendarStore = (
@@ -24,6 +28,7 @@ export const createScheduleCalendarStore = (
     setDate: (date) => set({ date }),
     showWeekends,
     setShowWeekends: (showWeekends) => set({ showWeekends }),
+    setEditing: (editing) => set({ editing }),
   }));
 };
 

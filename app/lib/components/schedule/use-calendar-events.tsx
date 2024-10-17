@@ -1,13 +1,13 @@
 import { useMemo } from "react";
-import { addMonths, addWeeks, parse, subDays, subHours } from "date-fns";
+import { addMonths, addWeeks, parse, subDays } from "date-fns";
 import { EventInput } from "@fullcalendar/core";
 
-import { useScheduleCalendarEvents } from "@/lib/hooks/use-schedule-calendar-events";
+import { useScheduleCalendarCourseEvents, useScheduleCalendarCustomEvents } from "@/lib/hooks/use-schedule-calendar-events";
 import { useTermCalendars } from "@/lib/hooks/use-term-calendars";
 import { TERM_CODE_DICTIONARY } from "@/lib/uci/courses/types";
 import { WebSocMeeting } from "@/lib/uci/offerings/types";
 import { isCourseScheduleEvent } from "@/lib/uci/events/types";
-import { View } from "@/lib/hooks/use-schedule-calendar";
+import { View } from "@/lib/components/schedule/context";
 import { Frequency, RRule } from "rrule";
 
 export const COMMON_DAYS_TO_RRULE_DAYS: Record<
@@ -136,20 +136,23 @@ export const useCalendarEvents = (
   view: View,
   date: Date,
 ) => {
-  const events = useScheduleCalendarEvents(scheduleId);
+  const courses = useScheduleCalendarCourseEvents(scheduleId);
+  const customs = useScheduleCalendarCustomEvents(scheduleId);
   const terms = useTermCalendars();
 
   return {
     events: useMemo<EventInput[]>(() => {
     if (
-      events.status === "pending" ||
-      events.status === "error" ||
+      courses.status === "pending" ||
+      courses.status === "error" ||
+      customs.status === "pending" ||
+      customs.status === "error" ||
       terms.status === "pending" ||
       terms.status === "error"
     ) {
       return [];
     }
-    const meetings = events.data
+    const meetings = [...courses.data, ...customs.data]
       .filter((event) => {
         if (isCourseScheduleEvent(event)) {
           return event.info.section.meetings.length > 0;
@@ -331,7 +334,7 @@ export const useCalendarEvents = (
               frequency: rules.begin.options.freq,
               days: rules.begin.options.byweekday,
               until: meeting.until,
-              editable: true,
+              editable: true
             };
           });
         }
@@ -341,12 +344,12 @@ export const useCalendarEvents = (
           end: meeting.end,
           color: meeting.color,
           event: meeting,
-          editable: true,
+          editable: true
         };
       })
       .flat()
       .filter((meeting) => meeting !== undefined);
-  }, [events.data, events.status, terms.data, terms.status, date, view]),
-  isLoading: events.status === "pending" || terms.status === "pending",
+  }, [customs.data, customs.status, courses.data, courses.status, terms.data, terms.status, date, view]),
+  isLoading: customs.status === "pending" || courses.status === "pending" || terms.status === "pending",
 };
 };

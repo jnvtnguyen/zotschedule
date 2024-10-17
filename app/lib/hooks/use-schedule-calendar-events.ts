@@ -15,7 +15,6 @@ import {
   WebSocSection,
 } from "@/lib/uci/offerings/types";
 import { isCourseScheduleEvent } from "@/lib/uci/events/types";
-import { sql } from "kysely";
 
 export type CourseScheduleCalendarEvent = {
   info: {
@@ -31,22 +30,30 @@ export type ScheduleCalendarEvent =
   | CourseScheduleCalendarEvent
   | CustomScheduleCalendarEvent;
 
-const getScheduleCalendarEvents = createServerFn(
+const getScheduleCalendarCustomEvents = createServerFn(
   "POST",
   async (scheduleId: string) => {
-    const courseEvents = await database
-      .selectFrom("courseScheduleEvents")
-      .where("scheduleId", "=", scheduleId)
-      .selectAll()
-      .execute();
-    const customEvents = await database
+    const events = await database
       .selectFrom("customScheduleEvents")
       .where("scheduleId", "=", scheduleId)
       .selectAll()
       .execute();
-    return superjson.stringify([...courseEvents, ...customEvents]);
+    return superjson.stringify(events);
   },
 );
+
+const getScheduleCalendarCourseEvents = createServerFn(
+  "POST",
+  async (scheduleId: string) => {
+    const events = await database
+      .selectFrom("courseScheduleEvents")
+      .where("scheduleId", "=", scheduleId)
+      .selectAll()
+      .execute();
+    return superjson.stringify(events);
+  },
+);
+
 
 export const isCourseScheduleCalendarEvent = (
   event: ScheduleCalendarEvent,
@@ -54,13 +61,13 @@ export const isCourseScheduleCalendarEvent = (
   return "info" in event;
 };
 
-export const getScheduleCalendarEventsQuery = (
+export const getScheduleCalendarCourseEventsQuery = (
   scheduleId: string,
-): FetchQueryOptions<ScheduleCalendarEvent[]> => ({
-  queryKey: ["schedule-events", scheduleId],
+): FetchQueryOptions<CourseScheduleCalendarEvent[]> => ({
+  queryKey: ["schedule-course-events", scheduleId],
   queryFn: async () => {
-    const events = superjson.parse<BaseScheduleEvent[]>(
-      await getScheduleCalendarEvents(scheduleId),
+    const events = superjson.parse<CourseScheduleCalendarEvent[]>(
+      await getScheduleCalendarCourseEvents(scheduleId),
     );
     if (events.length === 0) {
       return [];
@@ -73,25 +80,43 @@ export const getScheduleCalendarEventsQuery = (
     );
     return events
       .map((event) => {
-        if (isCourseScheduleEvent(event)) {
-          const info = information.find(
-            (info) => info.section.code === event.sectionCode,
-          );
-          if (!info) {
-            return;
-          }
-          return {
-            ...event,
-            info,
-          };
+        const info = information.find(
+          (info) => info.section.code === event.sectionCode,
+        );
+        if (!info) {
+          return;
         }
-        return event;
+        return {
+          ...event,
+          info,
+        };
       })
       .filter((event) => event !== undefined);
   },
 });
 
-export const useScheduleCalendarEvents = (scheduleId: string) => {
-  const query = useQuery(getScheduleCalendarEventsQuery(scheduleId));
+export const getScheduleCalendarCustomEventsQuery = (
+  scheduleId: string,
+): FetchQueryOptions<CustomScheduleCalendarEvent[]> => ({
+  queryKey: ["schedule-custom-events", scheduleId],
+  queryFn: async () => {
+    const events = superjson.parse<CustomScheduleCalendarEvent[]>(
+      await getScheduleCalendarCustomEvents(scheduleId),
+    );
+    return events;
+  },
+});
+
+export const useScheduleCalendarCourseEvents = (scheduleId: string) => {
+  const query = useQuery(
+    getScheduleCalendarCourseEventsQuery(scheduleId),
+  );
+  return query;
+};
+
+export const useScheduleCalendarCustomEvents = (scheduleId: string) => {
+  const query = useQuery(
+    getScheduleCalendarCustomEventsQuery(scheduleId),
+  );
   return query;
 };

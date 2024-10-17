@@ -79,7 +79,7 @@ export function ScheduleActionsPanelSearchFilter({
               setIsOpen(!!value);
             }}
             onKeyDown={(e) => {
-              if (/^.$/u.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+              if (/^.$/u.test(e.key) && !e.metaKey && !e.altKey) {
                 setIsOpen(true);
               }
               if (e.key === "Escape") {

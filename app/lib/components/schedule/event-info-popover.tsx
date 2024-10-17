@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { EventImpl } from "@fullcalendar/core/internal";
+import { EventApi } from "@fullcalendar/core";
 import { DotFilledIcon } from "@radix-ui/react-icons";
 import { Frequency } from "rrule";
 
@@ -13,12 +14,13 @@ import { EventPopover, EventPopoverProps } from "./event-popover";
 import { EventColorPicker } from "./schedule-actions-panel/event/event-color-picker";
 import { RemoveEventButton } from "./schedule-actions-panel/event/remove-event-button";
 import { RRULE_DAYS_TO_LABEL } from "./use-calendar-events";
+import { EditEventButton } from "./edit-event-button";
 
 export type EventInfoPopoverProps = Omit<
   EventPopoverProps,
   "title" | "children"
 > & {
-  event: EventImpl;
+  event: EventImpl | EventApi;
 };
 
 export function EventInfoPopover({
@@ -73,7 +75,10 @@ export function EventInfoPopover({
         )}
         <div className="flex flex-row justify-end items-center">
           <EventColorPicker event={event} icon="circle" />
-          <RemoveEventButton event={event} onRemove={onClose} />
+          {!isCourseEvent && (
+            <EditEventButton event={event} />
+          )}
+          <RemoveEventButton event={event} onRemove={onClose} /> 
         </div>
       </div>
     </EventPopover>

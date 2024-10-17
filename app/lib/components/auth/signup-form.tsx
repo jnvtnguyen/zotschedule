@@ -167,7 +167,7 @@ export function SignupForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">
+        <Button type="submit" disabled={form.formState.isSubmitSuccessful || form.formState.isSubmitting}>
           {form.formState.isSubmitting ?
             <Spinner className="animate-spin w-5 h-5" /> :
             "Sign up"

@@ -9,7 +9,12 @@
 }
 
 .fc-event {
-  border: 0 !important;
+  border: 1px solid !important;
+  @apply border-background !important;
+}
+
+.fc-scroller {
+  overflow: hidden !important;
 }
 
 .fc-event.new-event {

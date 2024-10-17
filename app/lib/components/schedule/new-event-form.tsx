@@ -11,6 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { UTCDate } from "@date-fns/utc";
 import superjson from "superjson";
 import { Frequency } from "rrule";
+import { EventApi } from "@fullcalendar/core";
 
 import { database } from "@/lib/database";
 import { Schedule } from "@/lib/database/types";
@@ -45,6 +46,7 @@ import {
 } from "./use-calendar-events";
 
 const newEventFormSchema = z.object({
+  id: z.string(),
   color: z.string().min(1, { message: "A event color is required." }),
   title: z.string().optional(),
   start: z.date({ required_error: "A event start date is required." }),
@@ -71,29 +73,51 @@ const save = createServerFn("POST", async (payload: string) => {
     custom?: CustomRecurrence;
   }>(payload);
 
-  await database
-    .insertInto("customScheduleEvents")
-    .values({
-      scheduleId: schedule.id,
-      color: data.color,
-      title: data.title || "(No Title)",
-      description: "",
-      start: data.start,
-      end: data.end,
-      repeatability: data.repeatability as CustomScheduleEventRepeatability,
-      frequency: custom?.frequency,
-      interval: custom?.interval,
-      days:
-        custom?.frequency === Frequency.WEEKLY ? custom.days : [],
-      until: custom?.ends,
-      months: [],
-      weeks: [],
-    })
-    .executeTakeFirstOrThrow();
+  if (data.id === "new") {
+    await database
+      .insertInto("customScheduleEvents")
+      .values({
+        scheduleId: schedule.id,
+        color: data.color,
+        title: data.title || "(No Title)",
+        description: "",
+        start: data.start,
+        end: data.end,
+        repeatability: data.repeatability as CustomScheduleEventRepeatability,
+        frequency: custom?.frequency,
+        interval: custom?.interval,
+        days:
+          custom?.frequency === Frequency.WEEKLY ? custom.days : [],
+        until: custom?.ends,
+        months: [],
+        weeks: [],
+      })
+      .executeTakeFirstOrThrow();
+  } else {
+    await database
+    .updateTable("customScheduleEvents")
+    .where("id", "=", data.id)
+    .set({
+        color: data.color,
+        title: data.title || "(No Title)",
+        description: "",
+        start: data.start,
+        end: data.end,
+        repeatability: data.repeatability as CustomScheduleEventRepeatability,
+        frequency: custom?.frequency,
+        interval: custom?.interval,
+        days:
+          custom?.frequency === Frequency.WEEKLY ? custom.days : [],
+        until: custom?.ends,
+        months: [],
+        weeks: [],
+      })
+      .executeTakeFirstOrThrow();
+  }
 });
 
 type NewEventFormProps = {
-  event: EventImpl;
+  event: EventImpl | EventApi;
   schedule: Schedule;
   onEventChange: (event: Partial<CustomScheduleCalendarEvent>) => void;
   onClose: () => void;
@@ -103,6 +127,8 @@ type RepeatabilityOption = {
   label: string;
   value: CustomScheduleEventRepeatability | "new-custom";
 };
+
+const isEmptyTitle = (title: string) => title.length === 0 || title === "(No Title)";
 
 export function NewEventForm({
   event,
@@ -134,8 +160,9 @@ export function NewEventForm({
   const form = useForm<z.infer<typeof newEventFormSchema>>({
     resolver: zodResolver(newEventFormSchema),
     defaultValues: {
+      id: event.extendedProps.event.id,
       color: event.extendedProps.event.color,
-      title: event.extendedProps.event.title,
+      title: isEmptyTitle(event.extendedProps.event.title) ? "" : event.extendedProps.event.title,
       start: event.extendedProps.event.start,
       end: event.extendedProps.event.end,
       repeatability: event.extendedProps.event.repeatability,
@@ -273,7 +300,7 @@ export function NewEventForm({
         }),
       );
       await queryClient.invalidateQueries({
-        queryKey: ["schedule-events", schedule.id],
+        queryKey: ["schedule-custom-events", schedule.id],
       });
       toast({
         description: "The event has been successfully saved.",

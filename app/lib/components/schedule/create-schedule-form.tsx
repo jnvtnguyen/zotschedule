@@ -142,7 +142,7 @@ export function CreateScheduleForm({
               Cancel
             </Button>
           )}
-          <Button type="submit">
+          <Button type="submit" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting ? (
               <Spinner className="w-5 h-5 animate-spin" />
             ) : (

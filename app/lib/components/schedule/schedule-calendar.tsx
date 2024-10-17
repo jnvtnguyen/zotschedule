@@ -4,6 +4,7 @@ import FullCalendar from "@fullcalendar/react";
 import {
   DateSelectArg,
   DayHeaderContentArg,
+  EventApi,
   EventClickArg,
   EventContentArg,
   EventDropArg,
@@ -26,11 +27,11 @@ import interactionPlugin, {
 import { Spinner } from "@phosphor-icons/react";
 import { Controller, animated } from "@react-spring/web";
 
-import { useScheduleCalendar } from "@/lib/hooks/use-schedule-calendar";
+import { useScheduleCalendar } from "@/lib/components/schedule/context";
 import { useSchedule } from "@/lib/hooks/use-schedule";
 import { ScheduleEvent } from "@/lib/database/types";
 import { DEFAULT_EVENT_COLOR } from "@/lib/uci/events/types";
-import { useCalendarEvents } from "./use-calendar-events";
+import { COMMON_DAYS_TO_RRULE_DAYS, useCalendarEvents } from "./use-calendar-events";
 import { NewEventPopover } from "./new-event-popover";
 import {
   isCourseScheduleCalendarEvent,
@@ -60,7 +61,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
     return;
   }
   const [anchor, setAnchor] = useState<HTMLDivElement | undefined>();
-  const [selected, setSelected] = useState<EventImpl | undefined>();
+  const [selected, setSelected] = useState<EventImpl | EventApi | undefined>();
   const [isDragging, setIsDragging] = useState(false);
   const animations = new Controller({
     opacity: 0,
@@ -70,21 +71,32 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   const queryClient = useQueryClient();
   const view = useScheduleCalendar((state) => state.view);
   const date = useScheduleCalendar((state) => state.date);
-  console.log(date)
   const showWeekends = useScheduleCalendar((state) => state.showWeekends);
+  const editing = useScheduleCalendar((state) => state.editing);
+  const setEditing = useScheduleCalendar((state) => state.setEditing);
   const { events, isLoading } = useCalendarEvents(schedule.id, view, date);
   const ref = useRef<FullCalendar>(null);
 
-  const reset = async (anchor?: HTMLDivElement, selected?: EventImpl) => { 
+  useEffect(() => {
+    console.log(events)
+  }, [events]);
+
+  const reset = async (anchor?: HTMLDivElement, selected?: EventImpl | EventApi, skip?: boolean) => {
     setAnchor(anchor);
     setSelected(selected); 
     if (isNewEvent) {
       queryClient.setQueryData(
-        ["schedule-events", schedule.id],
+        ["schedule-custom-events", schedule.id],
         (events: ScheduleEvent[]) => {
           return events.filter((event) => event.id !== "new");
         },
       );
+    } 
+    if (editing && !skip) {
+      setEditing(undefined);
+      await queryClient.invalidateQueries({
+        queryKey: ["schedule-custom-events", schedule.id],
+      });
     }
   };
 
@@ -129,13 +141,33 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
       opacity: 1,
       transform: "translateY(0)",
     });
-  }, [isLoading])
+  }, [isLoading]);
+
+  useEffect(() => {
+    if (!editing) {
+      return;
+    }
+
+    queueMicrotask(() => {
+      if (ref.current) {
+        const events = ref.current.getApi().getEvents();
+        const event = events.find((e) => e.extendedProps.event.id === editing?.id);
+        if (event) {
+          reset(
+            document.querySelector(`.event-${editing.id}`)?.parentElement as HTMLDivElement,
+            event,
+            true
+          );
+        }
+      }
+    });
+  }, [editing]);
 
   const onSelect = (info: DateSelectArg) => {
     let start = info.start;
     let end = info.end;
     queryClient.setQueryData(
-      ["schedule-events", schedule.id],
+      ["schedule-custom-events", schedule.id],
       (events: ScheduleEvent[]) => {
         return [...events, NEW_EVENT(start, end)];
       },
@@ -146,7 +178,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
     let start = roundToNearestHours(info.date, { roundingMethod: "floor" });
     let end = addHours(start, 1);
     queryClient.setQueryData(
-      ["schedule-events", schedule.id],
+      ["schedule-custom-events", schedule.id],
       (events: ScheduleEvent[]) => {
         return [...events, NEW_EVENT(start, end)];
       },
@@ -156,7 +188,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   const onEventAction = (info: EventResizeDoneArg | EventDropArg) => {
     const event = info.event.extendedProps.event as ScheduleCalendarEvent;
     queryClient.setQueryData(
-      ["schedule-events", schedule.id],
+      ["schedule-custom-events", schedule.id],
       (events: ScheduleEvent[]) => {
         return events.map((e) => {
           if (e.id === event.id && !isCourseScheduleCalendarEvent(event)) {
@@ -208,10 +240,10 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
               minutes: 15,
             }}
             slotMinTime={{
-              hours: 2
+              hours: 1
             }}
             slotMaxTime={{
-              hours: 26
+              hours: 25
             }}
             expandRows={true}
             selectable={!anchor}
@@ -230,7 +262,10 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
               if (event.event.extendedProps.event.id === "new") {
                 return ["new-event"];
               }
-              return [];
+              return [
+                `event-${event.event.extendedProps.event.id}`,
+                editing && event.event.extendedProps.event.id === editing.id ? "editing" : "",
+              ];
             }}
             eventResizeStart={() => setIsDragging(true)}
             eventResizeStop={() => {
@@ -272,7 +307,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
           />
         </animated.div>
       )}
-      {anchor && selected && isNewEvent && (
+      {anchor && selected && (isNewEvent || editing) && (
         <NewEventPopover
           event={selected}
           anchor={anchor}
@@ -280,7 +315,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
           onClose={reset}
         />
       )}
-      {anchor && selected && !isNewEvent && (
+      {anchor && selected && !isNewEvent && !editing && (
         <EventInfoPopover
           event={selected}
           anchor={anchor}

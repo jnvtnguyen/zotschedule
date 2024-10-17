@@ -76,7 +76,7 @@ export type Schedule = {
     /**
      * @kyselyType(ColumnType<import('@/lib/hooks/use-schedule-calendar.tsx').View, string, string>)
      */
-    view: ColumnType<import('@/lib/hooks/use-schedule-calendar.tsx').View, string, string>;
+    view: ColumnType<import('@/lib/components/schedule/context').View, string, string>;
     userId: string;
 };
 export type SearchAlias = {

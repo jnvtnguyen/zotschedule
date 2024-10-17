@@ -31,11 +31,13 @@ export function ScheduleActionsPanelTabs() {
       })}
     >
       <Tabs className="w-full h-full" defaultValue="search">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="search">Search</TabsTrigger>
-          <TabsTrigger value="events">Events</TabsTrigger>
-          <TabsTrigger value="map">Map</TabsTrigger>
-        </TabsList>
+        <div className="px-2 pt-2">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="search">Search</TabsTrigger>
+            <TabsTrigger value="events">Events</TabsTrigger>
+            <TabsTrigger value="map">Map</TabsTrigger>
+          </TabsList>
+        </div>
         <TabsContent
           value="search"
           className="h-[calc(100%-2.8rem)] w-full overflow-y-auto px-2"

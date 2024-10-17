@@ -49,8 +49,9 @@ export function EventPopover({
     outsidePress: (e: MouseEvent) => {
       if (
         e.target instanceof HTMLElement &&
-        ((e.target.closest(".fc-event") &&
-          document.querySelector(".fc-event.new-event")) ||
+        ((e.target.closest(".fc-event") && (
+          document.querySelector(".fc-event.new-event") ||
+          document.querySelector(".fc-event.editing"))) ||
           e.target.tagName === "HTML")
       ) {
         return false;
@@ -81,7 +82,7 @@ export function EventPopover({
       {...getFloatingProps()}
       className="z-50 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none w-full max-w-80"
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         <div className="flex flex-row justify-between items-center">
           <h3 className="text-md">{title}</h3>
           <Button

@@ -10,7 +10,7 @@ import {
 } from "date-fns";
 
 import { Button } from "@/lib/components/ui/button";
-import { useScheduleCalendar } from "@/lib/hooks/use-schedule-calendar";
+import { useScheduleCalendar } from "@/lib/components/schedule/context";
 
 export function ScheduleNavigation() {
   const date = useScheduleCalendar((state) => state.date);

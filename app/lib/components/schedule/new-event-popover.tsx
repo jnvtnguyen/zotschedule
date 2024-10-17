@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { EventImpl } from "@fullcalendar/core/internal";
+import { EventApi } from "@fullcalendar/core";
 import { isSameDay, isSameMonth, isSameWeek } from "date-fns";
 
 import { useSchedule } from "@/lib/hooks/use-schedule";
@@ -7,12 +8,12 @@ import {
   CustomScheduleCalendarEvent,
   ScheduleCalendarEvent,
 } from "@/lib/hooks/use-schedule-calendar-events";
-import { useScheduleCalendar } from "@/lib/hooks/use-schedule-calendar";
+import { useScheduleCalendar } from "@/lib/components/schedule/context";
 import { NewEventForm } from "./new-event-form";
 import { EventPopover, EventPopoverProps } from "./event-popover";
 
 type NewEventPopoverProps = Omit<EventPopoverProps, "title" | "children"> & {
-  event: EventImpl;
+  event: EventImpl | EventApi;
 };
 
 export function NewEventPopover({
@@ -29,6 +30,7 @@ export function NewEventPopover({
   const view = useScheduleCalendar((state) => state.view);
   const date = useScheduleCalendar((state) => state.date);
   const setDate = useScheduleCalendar((state) => state.setDate);
+  const editing = useScheduleCalendar((state) => state.editing);
 
   const onEventChange = ({
     start,
@@ -36,10 +38,10 @@ export function NewEventPopover({
   }: Partial<CustomScheduleCalendarEvent>) => {
     if (start) {
       queryClient.setQueryData(
-        ["schedule-events", schedule.id],
+        ["schedule-custom-events", schedule.id],
         (events: ScheduleCalendarEvent[]) => {
           return events.map((e) => {
-            if (e.id === "new") {
+            if (e.id === event.extendedProps.event.id) {
               return {
                 ...e,
                 start,
@@ -60,10 +62,10 @@ export function NewEventPopover({
     }
     if (rest) {
       queryClient.setQueryData(
-        ["schedule-events", schedule.id],
+        ["schedule-custom-events", schedule.id],
         (events: ScheduleCalendarEvent[]) => {
           return events.map((e) => {
-            if (e.id === "new") {
+            if (e.id === event.extendedProps.event.id) {
               return {
                 ...e,
                 ...rest,
@@ -79,7 +81,7 @@ export function NewEventPopover({
   return (
     <EventPopover
       anchor={anchor}
-      title="Create Event"
+      title={editing ? "Edit Event" : "New Event"}
       onClose={onClose}
       isDragging={isDragging}
     >

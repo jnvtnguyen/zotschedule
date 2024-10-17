@@ -10,7 +10,7 @@ import {
 import {
   createScheduleCalendarStore,
   ScheduleCalendarContext,
-} from "@/lib/hooks/use-schedule-calendar";
+} from "@/lib/components/schedule/context";
 import { useSchedule } from "@/lib/hooks/use-schedule";
 import { useState } from "react";
 
@@ -37,13 +37,13 @@ export function ScheduleView({ user }: ScheduleViewProps) {
       )}
     >
       <ScheduleNavbar user={user} />
-      <div className="space-y-4 h-full w-full">
+      <div className="space-y-4 h-[calc(100vh-4rem)] w-full">
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel
             minSize={25}
             defaultSize={65}
             onResize={(w) => setWidth(w)}
-            className="h-[calc(100vh-4.8rem)]"
+            className="h-full"
           >
             <ScheduleCalendar width={width} />
           </ResizablePanel>
@@ -51,7 +51,7 @@ export function ScheduleView({ user }: ScheduleViewProps) {
           <ResizablePanel
             minSize={25}
             defaultSize={35}
-            className="h-[calc(100vh-4rem)]"
+            className="h-full"
           >
             <ScheduleActionsPanel />
           </ResizablePanel>

@@ -1,14 +1,13 @@
 import { useMemo } from "react";
 
-import { ScheduleCalendarEvent } from "@/lib/hooks/use-schedule-calendar-events";
+import { CourseScheduleCalendarEvent } from "@/lib/hooks/use-schedule-calendar-events";
 import { ScheduleActionsPanelCourseEventsListCourseEvent } from "./course-event";
 import { Schedule } from "@/lib/database/types";
 import { groupBy } from "@/lib/utils/general";
 import { SECTION_TYPE_ORDER } from "@/lib/uci/offerings/types";
-import { isCourseScheduleEvent } from "@/lib/uci/events/types";
 
 type ScheduleActionsPanelCourseEventsListProps = {
-  events: ScheduleCalendarEvent[];
+  events: CourseScheduleCalendarEvent[];
   schedule: Schedule;
 };
 
@@ -18,7 +17,7 @@ export function ScheduleActionsPanelCourseEventsList({
 }: ScheduleActionsPanelCourseEventsListProps) {
   const grouped = useMemo(() => {
     return groupBy(
-      events.filter((event) => isCourseScheduleEvent(event)),
+      events,
       (event) => `${event.info.department.code} ${event.info.course.number}`,
     );
   }, [events]);

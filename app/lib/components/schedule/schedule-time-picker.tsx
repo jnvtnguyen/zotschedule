@@ -3,8 +3,8 @@ import { CaretDownIcon } from "@radix-ui/react-icons";
 
 import { database } from "@/lib/database";
 import { Schedule } from "@/lib/database/types";
-import { useScheduleCalendar } from "@/lib/hooks/use-schedule-calendar";
-import { View } from "@/lib/hooks/use-schedule-calendar";
+import { useScheduleCalendar } from "@/lib/components/schedule/context";
+import { View } from "@/lib/components/schedule/context";
 import {
   DropdownMenu,
   DropdownMenuContent,

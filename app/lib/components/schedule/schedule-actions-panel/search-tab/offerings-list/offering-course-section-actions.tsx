@@ -3,11 +3,10 @@ import { PlusIcon } from "@radix-ui/react-icons";
 import { WebSocSection } from "@/lib/uci/offerings/types";
 import { Button } from "@/lib/components/ui/button";
 import { useSchedule } from "@/lib/hooks/use-schedule";
-import { useScheduleCalendarEvents } from "@/lib/hooks/use-schedule-calendar-events";
+import { useScheduleCalendarCourseEvents } from "@/lib/hooks/use-schedule-calendar-events";
 import { useScheduleActionsPanel } from "@/lib/components/schedule/schedule-actions-panel/context";
 import {
   DEFAULT_EVENT_COLOR,
-  isCourseScheduleEvent,
 } from "@/lib/uci/events/types";
 import { useEventMutations } from "@/lib/components/schedule/schedule-actions-panel/event/event-mutations";
 import { RemoveEventButton } from "@/lib/components/schedule/schedule-actions-panel/event/remove-event-button";
@@ -24,15 +23,14 @@ export function ScheduleActionsPanelOfferingCourseSectionActions({
     return;
   }
 
-  const events = useScheduleCalendarEvents(schedule.id);
+  const events = useScheduleCalendarCourseEvents(schedule.id);
   const { add } = useEventMutations({ scheduleId: schedule.id });
 
   if (events.status === "pending") return <></>;
   if (events.status === "error") return <></>;
 
   const event = events.data.find(
-    (event) =>
-      isCourseScheduleEvent(event) && event.sectionCode === section.code,
+    (event) => event.sectionCode === section.code,
   );
 
   return (

@@ -63,8 +63,9 @@ export const useEventMutations = ({ scheduleId }: { scheduleId: string }) => {
         return superjson.parse<ScheduleEvent>(await add({ event }));
       },
       onSuccess: async (event: ScheduleEvent) => {
+        const key = isCourseScheduleEvent(event) ? "course" : "custom";
         await queryClient.invalidateQueries({
-          queryKey: ["schedule-events", scheduleId],
+          queryKey: [`schedule-${key}-events`, scheduleId],
         });
         if (isCourseScheduleEvent(event)) {
           toast({
@@ -91,8 +92,9 @@ export const useEventMutations = ({ scheduleId }: { scheduleId: string }) => {
         return event;
       },
       onSuccess: async (event: ScheduleEvent) => {
+        const key = isCourseScheduleEvent(event) ? "course" : "custom";
         await queryClient.invalidateQueries({
-          queryKey: ["schedule-events", event.scheduleId],
+          queryKey: [`schedule-${key}-events`, event.scheduleId],
         });
         if (isCourseScheduleEvent(event)) {
           toast({
