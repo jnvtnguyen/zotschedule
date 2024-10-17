@@ -7,7 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Time } from "@internationalized/date";
 import { createServerFn } from "@tanstack/start";
 import { useQueryClient } from "@tanstack/react-query";
-import { UTCDate } from "@date-fns/utc";
 import superjson from "superjson";
 import { Frequency } from "rrule";
 import { Spinner } from "@phosphor-icons/react";
@@ -288,14 +287,14 @@ export function NewEventForm({
         superjson.stringify({
           data: {
             ...data,
-            start: new UTCDate(data.start),
-            end: new UTCDate(data.end),
+            start: data.start,
+            end: data.end,
           },
           schedule,
           custom: {
             ...custom,
             ends: custom?.ends
-              ? new UTCDate(custom.ends)
+              ? custom.ends
               : undefined,
           },
         }),
