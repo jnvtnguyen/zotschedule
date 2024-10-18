@@ -1,8 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
-import { PersonIcon } from "@radix-ui/react-icons";
 import { useTheme } from "next-themes";
+import { createServerFn } from "@tanstack/start";
+import { getEvent, setCookie } from "vinxi/http";
 
-import { AuthUser, logoutCurrentSession } from "@/lib/auth";
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -14,11 +14,39 @@ import {
   DropdownMenuSubContent,
 } from "@/lib/components/ui/dropdown-menu";
 
-import { Button } from "@/lib/components/ui/button";
 import { toast } from "@/lib/hooks/use-toast";
+import { User } from "@/lib/database/types";
+import { validateCurrentSession } from "@/lib/auth";
+import { database } from "@/lib/database";
+import { Avatar, AvatarFallback, AvatarImage } from "@/lib/components/ui/avatar";
+
+export const logoutCurrentSession = createServerFn("POST", async () => {
+  const { session } = await validateCurrentSession();
+  if (!session) {
+    return {
+      success: false,
+    };
+  }
+
+  await database
+    .deleteFrom("userSessions")
+    .where("userSessions.id", "=", session.id)
+    .execute();
+  const event = getEvent();
+  setCookie(event, "session", "", {
+    httpOnly: true,
+    path: "/",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 0,
+  });
+  return {
+    success: true,
+  };
+});
 
 type UserDropdownProps = {
-  user: AuthUser;
+  user: User;
 };
 
 export function UserDropdown({ user }: UserDropdownProps) {
@@ -28,7 +56,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
   const onLogout = async () => {
     try {
       await logoutCurrentSession();
-      navigate({ to: "/auth/login" });
+      navigate({ to: "/auth" });
     } catch (error) {
       toast({
         title: "Uh oh! Something went wrong.",
@@ -40,10 +68,13 @@ export function UserDropdown({ user }: UserDropdownProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="secondary" size="icon" className="rounded-full">
-          <PersonIcon className="w-4 h-4" />
-        </Button>
+      <DropdownMenuTrigger>
+        <Avatar>
+          <img src={user.picture} alt={user.name} />
+          <AvatarFallback>
+            {user.name[0].toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuSub>

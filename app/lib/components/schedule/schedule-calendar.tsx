@@ -243,6 +243,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
             expandRows={true}
             editable={true}
             droppable={true}
+            selectable={!editing || !isNewEvent}
             select={onSelect}
             dateClick={onClick}
             eventClick={onEventClick}
@@ -259,6 +260,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
                   ? "editing"
                   : "",
                 event.event.extendedProps.event.id === "new" ? "new-event" : "",
+                event.event.extendedProps.declined ? "declined" : "",
               ];
             }}
             eventResizeStart={() => setIsDragging(true)}
@@ -267,7 +269,8 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
             }}
             eventResize={(info) => onEventAction(info)}
             eventDragStart={() => setIsDragging(true)}
-            eventDragStop={() => {
+            eventDragStop={(info) => {
+              info.event.setExtendedProp("height", info.el.clientHeight);
               setIsDragging(false);
             }}
             eventDrop={(info) => onEventAction(info)}
@@ -369,6 +372,7 @@ function DayHeaderContent(props: DayHeaderContentArg) {
 function EventContent(props: EventContentArg) {
   const base = props.event;
   const extended = props.event.extendedProps;
+  const declined = extended.declined;
   const event = extended.event as ScheduleCalendarEvent;
   const formatted = getFormattedRange(base.start!, base.end);
   const height = props.isMirror
@@ -393,7 +397,7 @@ function EventContent(props: EventContentArg) {
           {base.end ? ` - ${formatted.end}` : ""}
         </p>
       ) : (
-        <>
+        <div>
           <p className={classes.title}>
             {base.title === "" ? "(No Title)" : base.title}
           </p>
@@ -401,7 +405,7 @@ function EventContent(props: EventContentArg) {
             {formatted.start}
             {base.end ? ` - ${formatted.end}` : ""}
           </p>
-        </>
+        </div>
       ),
   };
 
@@ -411,7 +415,13 @@ function EventContent(props: EventContentArg) {
 
   if (isCourseScheduleCalendarEvent(event)) {
     return (
-      <div className="flex flex-col">
+      <div
+        className="flex flex-col"
+        style={{
+          color: declined ? event.color : "inherit",
+          textDecoration: declined ? "line-through" : "none",
+        }}
+      >
         <div className="flex flex-row items-center justify-between text-[0.8rem]">
           <p className="font-semibold">
             {event.info.department.code} {event.info.course.number}

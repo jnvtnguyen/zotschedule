@@ -19,10 +19,14 @@ export function ScheduleToolbar() {
   return (
     <div className="flex flex-row w-full justify-between">
       <div className="flex flex-row gap-2 items-center">
-        <SchedulesDropdown schedules={schedules} />
+        <div className="hidden md:block">
+          <SchedulesDropdown schedules={schedules} />
+        </div>
         <ScheduleNavigation />
       </div>
-      <ScheduleTimePicker />
+      <div className="hidden md:block">
+        <ScheduleTimePicker />
+      </div>
     </div>
   );
 }

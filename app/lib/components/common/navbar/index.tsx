@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
 
-import { AuthUser } from "@/lib/auth";
 import { Button } from "@/lib/components/ui/button";
 import { UserDropdown } from "./user-dropdown";
+import { User } from "@/lib/database/types";
 
 type NavbarProps = {
-  user?: AuthUser;
+  user?: User;
 };
 
 export function Navbar({ user }: NavbarProps) {
@@ -16,11 +16,8 @@ export function Navbar({ user }: NavbarProps) {
         <UserDropdown user={user} />
       ) : (
         <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link to="/auth/login">Login</Link>
-          </Button>
           <Button asChild>
-            <Link to="/auth/signup">Sign up</Link>
+            <Link to="/auth">Login</Link>
           </Button>
         </div>
       )}

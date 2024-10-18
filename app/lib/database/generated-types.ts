@@ -50,6 +50,7 @@ export type CourseScheduleEvent = {
   sectionCode: number;
   term: string;
   color: string;
+  declined: Timestamp[];
 };
 export type CustomScheduleEvent = {
   id: Generated<string>;
@@ -79,10 +80,10 @@ export type Schedule = {
   isDefault: boolean;
   showWeekends: boolean;
   /**
-   * @kyselyType(ColumnType<import('@/lib/hooks/use-schedule-calendar.tsx').View, string, string>)
+   * @kyselyType(ColumnType<import('@/lib/components/schedule/context').View, string, string>)
    */
   view: ColumnType<
-    import("@/lib/hooks/use-schedule-calendar.tsx").View,
+    import("@/lib/components/schedule/context").View,
     string,
     string
   >;
@@ -103,11 +104,10 @@ export type TermCalendar = {
 };
 export type User = {
   id: Generated<string>;
+  googleId: string;
   name: string;
   email: string;
-  password: string;
-  createdAt: Generated<Timestamp>;
-  updatedAt: Timestamp;
+  picture: string;
 };
 export type UserSession = {
   id: Generated<string>;

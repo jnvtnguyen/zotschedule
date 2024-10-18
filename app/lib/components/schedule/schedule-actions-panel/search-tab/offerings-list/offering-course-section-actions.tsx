@@ -42,6 +42,7 @@ export function ScheduleActionsPanelOfferingCourseSectionActions({
               sectionCode: section.code,
               term,
               color: DEFAULT_EVENT_COLOR,
+              declined: [],
             })
           }
         >

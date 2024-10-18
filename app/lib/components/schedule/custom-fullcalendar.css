@@ -8,9 +8,8 @@
   text-transform: uppercase;
 }
 
-.fc-event {
-  border: 1px solid !important;
-  @apply border-background !important;
+.fc-event.declined {
+  background: none !important;
 }
 
 .fc-scroller {

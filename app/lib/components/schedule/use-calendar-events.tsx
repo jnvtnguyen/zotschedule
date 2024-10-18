@@ -1,5 +1,12 @@
 import { useMemo } from "react";
-import { addDays, addMonths, addWeeks, parse, subDays } from "date-fns";
+import {
+  addDays,
+  addMonths,
+  addWeeks,
+  isEqual,
+  parse,
+  subDays,
+} from "date-fns";
 import { EventInput } from "@fullcalendar/core";
 
 import {
@@ -222,6 +229,8 @@ export const useCalendarEvents = (
                 frequency: Frequency.WEEKLY,
                 days: days,
                 occurence: index,
+                // @ts-expect-error
+                declined: meeting.declined.some((date) => isEqual(date, start)),
               };
             });
           }

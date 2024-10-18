@@ -1,4 +1,5 @@
-import { AuthUser } from "@/lib/auth";
+import { useState } from "react";
+
 import { ScheduleCalendar } from "@/lib/components/schedule/schedule-calendar";
 import { ScheduleActionsPanel } from "@/lib/components/schedule/schedule-actions-panel";
 import { ScheduleNavbar } from "@/lib/components/schedule/navbar";
@@ -12,10 +13,10 @@ import {
   ScheduleCalendarContext,
 } from "@/lib/components/schedule/context";
 import { useSchedule } from "@/lib/hooks/use-schedule";
-import { useState } from "react";
+import { User } from "@/lib/database/types";
 
 type ScheduleViewProps = {
-  user: AuthUser;
+  user: User;
 };
 
 const today = new Date();
@@ -37,21 +38,24 @@ export function ScheduleView({ user }: ScheduleViewProps) {
       )}
     >
       <ScheduleNavbar user={user} />
-      <div className="space-y-4 h-[calc(100vh-4rem)] w-full">
-        <ResizablePanelGroup direction="horizontal">
-          <ResizablePanel
-            minSize={25}
-            defaultSize={65}
-            onResize={(w) => setWidth(w)}
-            className="h-full"
-          >
-            <ScheduleCalendar width={width} />
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel minSize={25} defaultSize={35} className="h-full">
-            <ScheduleActionsPanel />
-          </ResizablePanel>
-        </ResizablePanelGroup>
+      <div className="h-[calc(100vh-4rem)] w-full">
+        <div className="hidden md:block w-full h-full">
+          <ResizablePanelGroup direction="horizontal">
+            <ResizablePanel
+              minSize={25}
+              defaultSize={65}
+              onResize={(w) => setWidth(w)}
+              className="h-full"
+            >
+              <ScheduleCalendar width={width} />
+            </ResizablePanel>
+            <ResizableHandle withHandle />
+            <ResizablePanel minSize={25} defaultSize={35} className="h-full">
+              <ScheduleActionsPanel />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
+        <div className="md:hidden"></div>
       </div>
     </ScheduleCalendarContext.Provider>
   );

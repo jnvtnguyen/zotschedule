@@ -9,6 +9,7 @@ import {
   CustomScheduleEvent as DatabaseCustomScheduleEvent,
   SearchAlias as DatabaseSearchAlias,
   TermCalendar as DatabaseTermCalendar,
+  UserSession as DatabaseUserSession,
 } from "./generated-types";
 
 export type NewDepartment = Insertable<DatabaseDepartment>;
@@ -27,3 +28,4 @@ export type NewScheduleEvent = NewCourseScheduleEvent | NewCustomScheduleEvent;
 export type ScheduleEvent = CourseScheduleEvent | CustomScheduleEvent;
 export type SearchAlias = Selectable<DatabaseSearchAlias>;
 export type TermCalendar = Selectable<DatabaseTermCalendar>;
+export type UserSession = Selectable<DatabaseUserSession>;

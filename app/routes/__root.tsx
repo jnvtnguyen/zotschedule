@@ -35,6 +35,7 @@ export const Route = createRootRouteWithContext<{
   component: RootComponent,
   notFoundComponent: NotFound,
   beforeLoad: async () => {
+    "use server";
     const session = await validateCurrentSession();
     return {
       session,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
 import { EventImpl } from "@fullcalendar/core/internal";
@@ -15,7 +15,10 @@ import { useScheduleCalendar } from "@/lib/components/schedule/context";
 import { NewEventForm } from "./new-event-form";
 import { EventPopover, EventPopoverProps } from "./event-popover";
 
-type NewEventPopoverProps = Omit<EventPopoverProps, "title" | "children" | "anchor"> & {
+type NewEventPopoverProps = Omit<
+  EventPopoverProps,
+  "title" | "children" | "anchor"
+> & {
   event: EventImpl | EventApi;
 };
 
@@ -35,10 +38,14 @@ export function NewEventPopover({
   const editing = useScheduleCalendar((state) => state.editing);
   const events = useScheduleCalendarCustomEvents(schedule.id);
   const selector = `.event-${event.extendedProps.event.id}-${event.extendedProps.occurence}`;
-  const [anchor, setAnchor] = useState(document.querySelector(selector)?.parentElement as HTMLDivElement);
+  const [anchor, setAnchor] = useState(
+    document.querySelector(selector)?.parentElement as HTMLDivElement,
+  );
 
   useEffect(() => {
-    setAnchor(document.querySelector(selector)?.parentElement as HTMLDivElement);
+    setAnchor(
+      document.querySelector(selector)?.parentElement as HTMLDivElement,
+    );
   }, [events.data]);
 
   const onEventChange = ({

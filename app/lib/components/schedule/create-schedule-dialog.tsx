@@ -3,6 +3,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/lib/components/ui/dialog";
 import { CreateScheduleForm } from "./create-schedule-form";
 
@@ -22,6 +23,9 @@ export function CreateScheduleDialog({
       <DialogContent isCloseable={isCloseable}>
         <DialogHeader>
           <DialogTitle>Create Schedule</DialogTitle>
+          <DialogDescription>
+            Create a new schedule to store your classes and events.
+          </DialogDescription>
         </DialogHeader>
         <CreateScheduleForm
           onScheduleCreate={() => {

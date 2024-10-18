@@ -1,118 +1,133 @@
-import { Lucia, TimeSpan } from "lucia";
-import { NodePostgresAdapter } from "@lucia-auth/adapter-postgresql";
-import { createServerFn } from "@tanstack/start";
-import { getCookie, getEvent, setCookie, setResponseStatus } from "vinxi/http";
+import { getCookie, getEvent, setCookie } from "vinxi/http";
+import { encodeBase32, encodeHexLowerCase } from "@oslojs/encoding";
+import { sha256 } from "@oslojs/crypto/sha2";
 
-import { pool } from "@/lib/database";
-import { User } from "@/lib/database/types";
+import { database } from "@/lib/database";
+import { User, UserSession } from "@/lib/database/types";
 
-const adapter = new NodePostgresAdapter(pool, {
-  session: "user_sessions",
-  user: "users",
-});
+type SessionValidationResult =
+  | { session: UserSession; user: User }
+  | { session: null; user: null };
 
-export const lucia = new Lucia(adapter, {
-  sessionCookie: {
-    attributes: {
-      secure: process.env.NODE_ENV === "production",
+export const validateSessionToken = async (
+  token: string,
+): Promise<SessionValidationResult> => {
+  const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+  const session = await database
+    .selectFrom("userSessions")
+    .innerJoin("users", "users.id", "userSessions.userId")
+    .select([
+      "userSessions.id",
+      "userSessions.userId",
+      "userSessions.expiresAt",
+      "users.googleId",
+      "users.name",
+      "users.email",
+      "users.picture",
+    ])
+    .where("userSessions.id", "=", sessionId)
+    .executeTakeFirst();
+
+  if (!session) {
+    return {
+      session: null,
+      user: null,
+    };
+  }
+  if (Date.now() >= session.expiresAt.getTime()) {
+    await database
+      .deleteFrom("userSessions")
+      .where("userSessions.id", "=", sessionId)
+      .execute();
+    return {
+      session: null,
+      user: null,
+    };
+  }
+  if (Date.now() >= session.expiresAt.getTime() - 1000 * 60 * 60 * 24 * 15) {
+    session.expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30);
+    await database
+      .updateTable("userSessions")
+      .where("userSessions.id", "=", sessionId)
+      .set({ expiresAt: session.expiresAt })
+      .execute();
+  }
+  return {
+    session: {
+      id: session.id,
+      userId: session.userId,
+      expiresAt: session.expiresAt,
     },
-  },
-  sessionExpiresIn: new TimeSpan(2, "w"),
-  getUserAttributes: (attributes) => {
-    return {
-      name: attributes.name,
-      email: attributes.email,
-    };
-  },
-});
+    user: {
+      id: session.userId,
+      googleId: session.googleId,
+      name: session.name,
+      email: session.email,
+      picture: session.picture,
+    },
+  };
+};
 
-export type AuthUser = Omit<User, "password" | "createdAt" | "updatedAt">;
+export const generateSessionToken = () => {
+  const tokenBytes = new Uint8Array(20);
+  crypto.getRandomValues(tokenBytes);
+  const token = encodeBase32(tokenBytes).toLowerCase();
+  return token;
+};
 
-declare module "lucia" {
-  interface Register {
-    Lucia: typeof lucia;
-    DatabaseUserAttributes: AuthUser;
-  }
-}
-
-export const createSessionForUser = createServerFn(
-  "POST",
-  async (user: AuthUser) => {
-    const session = await lucia.createSession(user.id, {});
-    const sessionCookie = lucia.createSessionCookie(session.id);
-    const event = getEvent();
-    setCookie(
-      event,
-      sessionCookie.name,
-      sessionCookie.value,
-      sessionCookie.attributes,
-    );
-    return {
-      success: true,
-    };
-  },
-);
-
-export const validateCurrentSession = createServerFn("GET", async () => {
+export const createSessionForUser = async ({
+  token,
+  userId,
+}: {
+  token: string;
+  userId: string;
+}) => {
+  const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+  const session: UserSession = {
+    id: sessionId,
+    userId,
+    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+  };
+  await database.insertInto("userSessions").values(session).execute();
   const event = getEvent();
-  const sessionId = getCookie(event, lucia.sessionCookieName);
+  setCookie(event, "session", token, {
+    httpOnly: true,
+    path: "/",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    expires: session.expiresAt,
+  });
+  return {
+    success: true,
+  };
+};
+
+export const validateCurrentSession = async () => {
+  const event = getEvent();
+  const sessionId = getCookie(event, "session");
   if (!sessionId) {
-    setResponseStatus(event, 401);
     return {
       isLoggedIn: false,
     };
   }
 
-  const { session, user } = await lucia.validateSession(sessionId);
+  const { session, user } = await validateSessionToken(sessionId);
   if (!session || !user) {
-    const blankSessionCookie = lucia.createBlankSessionCookie();
-    setCookie(
-      event,
-      blankSessionCookie.name,
-      blankSessionCookie.value,
-      blankSessionCookie.attributes,
-    );
-    setResponseStatus(event, 401);
+    setCookie(event, "session", "", {
+      httpOnly: true,
+      path: "/",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 0,
+    });
     return {
       isLoggedIn: false,
     };
-  }
-
-  if (session && session.fresh) {
-    const sessionCookie = lucia.createSessionCookie(session.id);
-    setCookie(
-      event,
-      sessionCookie.name,
-      sessionCookie.value,
-      sessionCookie.attributes,
-    );
   }
 
   return {
     isLoggedIn: true,
+    session,
     user,
   };
-});
-
-export const logoutCurrentSession = createServerFn("POST", async () => {
-  const event = getEvent();
-  const sessionId = getCookie(event, lucia.sessionCookieName);
-  if (!sessionId) {
-    setResponseStatus(event, 401);
-    return {
-      success: false,
-    };
-  }
-
-  await lucia.invalidateSession(sessionId);
-  const blankSessionCookie = lucia.createBlankSessionCookie();
-  setCookie(
-    event,
-    blankSessionCookie.name,
-    blankSessionCookie.value,
-    blankSessionCookie.attributes,
-  );
-  return {
-    success: true,
-  };
-});
+};

@@ -4,7 +4,7 @@ import EnvironmentPlugin from 'vite-plugin-environment';
 
 export default defineConfig({
   vite: {
-    plugins: () => [
+    plugins: [
       TsConfigPathsPlugin(),
       EnvironmentPlugin([
         "COMBINED_ORAMA_ENDPOINT",
@@ -12,7 +12,7 @@ export default defineConfig({
       ]),
     ],
   },
-  deployment: {
+  server: {
     preset: "node-server"
   }
 });

@@ -47,11 +47,10 @@ CREATE TABLE "term_calendars" (
 -- CreateTable
 CREATE TABLE "users" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "google_id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "picture" TEXT NOT NULL,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -84,6 +83,7 @@ CREATE TABLE "course_schedule_events" (
     "section_code" INTEGER NOT NULL,
     "term" TEXT NOT NULL,
     "color" TEXT NOT NULL,
+    "declined" TIMESTAMPTZ[],
 
     CONSTRAINT "course_schedule_events_pkey" PRIMARY KEY ("id")
 );
@@ -111,6 +111,9 @@ CREATE TABLE "search_aliases" (
 
     CONSTRAINT "search_aliases_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_google_id_key" ON "users"("google_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");

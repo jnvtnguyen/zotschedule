@@ -58,11 +58,10 @@ model TermCalendar {
 
 model User {
   id         String        @id @default(dbgenerated("gen_random_uuid()"))
+  google_id  String        @unique
   name       String
   email      String        @unique
-  password   String
-  created_at DateTime      @default(now())
-  updated_at DateTime      @updatedAt
+  picture    String
   sessions   UserSession[]
   schedules  Schedule[]
 
@@ -84,7 +83,7 @@ model Schedule {
   name       String
   is_default Boolean
   show_weekends Boolean
-  /// @kyselyType(ColumnType<import('@/lib/hooks/use-schedule-calendar.tsx').View, string, string>)
+  /// @kyselyType(ColumnType<import('@/lib/components/schedule/context').View, string, string>)
   view        String
 
   user_id String
@@ -104,6 +103,7 @@ model CourseScheduleEvent {
   section_code Int
   term String
   color String
+  declined DateTime[] @db.Timestamptz()
 
   @@map("course_schedule_events")
 }

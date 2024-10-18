@@ -23,7 +23,7 @@ export const Route = createFileRoute("/")({
   component: Schedule,
   beforeLoad: async ({ context: { session, queryClient } }) => {
     if (!session.isLoggedIn || !session.user) {
-      throw redirect({ to: "/auth/login" });
+      throw redirect({ to: "/auth" });
     }
     await queryClient.prefetchQuery(getSchedulesQuery(session.user.id));
     await queryClient.prefetchQuery(getWebSocTermOptionsQuery);

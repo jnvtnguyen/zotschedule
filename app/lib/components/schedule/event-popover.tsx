@@ -13,6 +13,7 @@ import {
 
 import { Button } from "@/lib/components/ui/button";
 import { useSchedule } from "@/lib/hooks/use-schedule";
+import { Separator } from "@/lib/components/ui/separator";
 
 export type EventPopoverProps = {
   anchor: HTMLDivElement;
@@ -20,6 +21,7 @@ export type EventPopoverProps = {
   onClose: () => void;
   isDragging: boolean;
   children: React.ReactNode;
+  footer?: React.ReactNode;
 };
 
 export function EventPopover({
@@ -28,6 +30,7 @@ export function EventPopover({
   onClose,
   isDragging,
   children,
+  footer,
 }: EventPopoverProps) {
   const schedule = useSchedule((state) => state.schedule);
   if (!schedule) {
@@ -93,9 +96,9 @@ export function EventPopover({
         ...floatingStyles,
       }}
       {...getFloatingProps()}
-      className="z-50 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none w-full max-w-80"
+      className="z-50 rounded-md border bg-popover text-popover-foreground shadow-md outline-none w-full max-w-80"
     >
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 p-4">
         <div className="flex flex-row justify-between items-center">
           <h3 className="text-md">{title}</h3>
           <Button
@@ -110,6 +113,12 @@ export function EventPopover({
         </div>
         {children}
       </div>
+      {footer && (
+        <>
+          <Separator />
+          {footer}
+        </>
+      )}
     </div>
   );
 }
