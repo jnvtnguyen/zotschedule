@@ -21,15 +21,19 @@ const syncSchedule = createServerFn(
   "POST",
   async ({
     schedule,
-    preferences
+    preferences,
   }: {
     schedule: Schedule;
-    preferences: Partial<{ showWeekends: boolean; view: View; }>;
+    preferences: Partial<{ showWeekends: boolean; view: View }>;
   }) => {
     await database
       .updateTable("schedules")
       .where("id", "=", schedule.id)
-      .set({ ...Object.fromEntries(Object.entries(preferences).filter(([_, v]) => v !== undefined)) })
+      .set({
+        ...Object.fromEntries(
+          Object.entries(preferences).filter(([_, v]) => v !== undefined),
+        ),
+      })
       .executeTakeFirstOrThrow();
   },
 );
@@ -53,7 +57,10 @@ export function ScheduleTimePicker() {
     return <></>;
   }
 
-  const onChange = async ({ showWeekends, view }: Partial<{ showWeekends: boolean; view: View; }>) => {
+  const onChange = async ({
+    showWeekends,
+    view,
+  }: Partial<{ showWeekends: boolean; view: View }>) => {
     const preferences = { showWeekends, view };
     if (showWeekends !== undefined) {
       setShowWeekends(showWeekends);

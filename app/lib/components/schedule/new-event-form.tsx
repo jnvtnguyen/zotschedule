@@ -39,9 +39,7 @@ import { FREQUENCY_TO_LABEL } from "@/lib/uci/events/types";
 import { CustomScheduleEventRepeatability } from "@/lib/database/generated-types";
 import { CustomRecurrenceDialog } from "./custom-recurrence-dialog";
 import { CustomRecurrence } from "./custom-recurrence-form";
-import {
-  RRULE_DAYS_TO_LABEL,
-} from "./use-calendar-events";
+import { RRULE_DAYS_TO_LABEL } from "./use-calendar-events";
 
 const newEventFormSchema = z.object({
   id: z.string(),
@@ -57,7 +55,7 @@ const newEventFormSchema = z.object({
     end: z.object({
       hour: z.number(),
       minute: z.number(),
-    })
+    }),
   }),
   repeatability: z
     .nativeEnum(CustomScheduleEventRepeatability)
@@ -82,33 +80,21 @@ const save = createServerFn("POST", async (payload: string) => {
         start: data.start,
         end: data.end,
         repeatability: data.repeatability as CustomScheduleEventRepeatability,
-        frequency: custom?.frequency,
-        interval: custom?.interval,
-        days:
-          custom?.frequency === Frequency.WEEKLY ? custom.days : [],
-        until: custom?.ends,
-        months: [],
-        weeks: [],
+        recurrence: custom ? JSON.stringify(custom) : undefined,
       })
       .executeTakeFirstOrThrow();
   } else {
     await database
-    .updateTable("customScheduleEvents")
-    .where("id", "=", data.id)
-    .set({
+      .updateTable("customScheduleEvents")
+      .where("id", "=", data.id)
+      .set({
         color: data.color,
         title: data.title || "(No Title)",
         description: "",
         start: data.start,
         end: data.end,
         repeatability: data.repeatability as CustomScheduleEventRepeatability,
-        frequency: custom?.frequency,
-        interval: custom?.interval,
-        days:
-          custom?.frequency === Frequency.WEEKLY ? custom.days : [],
-        until: custom?.ends,
-        months: [],
-        weeks: [],
+        recurrence: custom ? JSON.stringify(custom) : undefined,
       })
       .executeTakeFirstOrThrow();
   }
@@ -127,7 +113,8 @@ type RepeatabilityOption = {
   value: CustomScheduleEventRepeatability | "new-custom";
 };
 
-const isEmptyTitle = (title: string) => title.length === 0 || title === "(No Title)";
+const isEmptyTitle = (title: string) =>
+  title.length === 0 || title === "(No Title)";
 
 export function NewEventForm({
   event,
@@ -139,17 +126,10 @@ export function NewEventForm({
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [isCustomRecurrenceOpen, setIsCustomRecurrenceOpen] = useState(false);
-  const [custom, setCustom] = useState<
-    CustomRecurrence | undefined
-  >(
-    event.repeatability ===
-      CustomScheduleEventRepeatability.CUSTOM
-      ? {
-          frequency: event.frequency!,
-          interval: event.interval!,
-          days: event.days!,
-          ends: event.end,
-        }
+  const [custom, setCustom] = useState<CustomRecurrence | undefined>(
+    event.repeatability === CustomScheduleEventRepeatability.CUSTOM &&
+      event.recurrence
+      ? event.recurrence
       : undefined,
   );
   const [savedRepeatability, setSavedRepeatability] =
@@ -174,7 +154,7 @@ export function NewEventForm({
         end: {
           hour: event.end.getHours(),
           minute: event.end.getMinutes(),
-        }
+        },
       },
     },
   });
@@ -206,16 +186,13 @@ export function NewEventForm({
       let label = FREQUENCY_TO_LABEL[custom.frequency];
       if (custom.frequency === Frequency.WEEKLY) {
         label = `${label} on ${custom.days
-          .sort(
-            (a, b) =>
-              a - b
-          )
+          .sort((a, b) => a - b)
           .map((day) => RRULE_DAYS_TO_LABEL[day])
           .join(", ")}`;
       }
 
-      if (custom.ends) {
-        label = `${label}, until ${format(custom.ends, "MMMM d, yyyy")}`;
+      if (custom.until) {
+        label = `${label}, until ${format(custom.until, "MMMM d, yyyy")}`;
       }
 
       options.push({
@@ -253,14 +230,9 @@ export function NewEventForm({
     onEventChange?.({
       repeatability,
     });
-    if (
-      repeatability === CustomScheduleEventRepeatability.CUSTOM &&
-      custom
-    ) {
+    if (repeatability === CustomScheduleEventRepeatability.CUSTOM && custom) {
       onEventChange?.({
-        ...custom,
-        months: [],
-        weeks: [],
+        recurrence: custom,
       });
     }
   }, [repeatability]);
@@ -291,12 +263,7 @@ export function NewEventForm({
             end: data.end,
           },
           schedule,
-          custom: {
-            ...custom,
-            ends: custom?.ends
-              ? custom.ends
-              : undefined,
-          },
+          custom: custom,
         }),
       );
       await queryClient.invalidateQueries({
@@ -397,13 +364,15 @@ export function NewEventForm({
                         event.start!.getHours(),
                         event.start!.getMinutes(),
                       );
-                      const end = event.end ? new Date(
-                        date.getFullYear(),
-                        date.getMonth(),
-                        date.getDate(),
-                        event.end.getHours(),
-                        event.end.getMinutes(),
-                      ) : start;
+                      const end = event.end
+                        ? new Date(
+                            date.getFullYear(),
+                            date.getMonth(),
+                            date.getDate(),
+                            event.end.getHours(),
+                            event.end.getMinutes(),
+                          )
+                        : start;
                       field.onChange(start);
                       onEventChange?.({
                         start,
@@ -439,14 +408,16 @@ export function NewEventForm({
                           });
                           return;
                         }
-                        const end = event.end ? new Date(
-                          event.start!.getFullYear(),
-                          event.start!.getMonth(),
-                          event.start!.getDate(),
-                          event.end.getHours(),
-                          event.end.getMinutes(),
-                        ) : event.start!;
-                        
+                        const end = event.end
+                          ? new Date(
+                              event.start!.getFullYear(),
+                              event.start!.getMonth(),
+                              event.start!.getDate(),
+                              event.end.getHours(),
+                              event.end.getMinutes(),
+                            )
+                          : event.start!;
+
                         let added = add(
                           new Date(
                             event.start!.getFullYear(),
@@ -457,7 +428,7 @@ export function NewEventForm({
                           ),
                           intervalToDuration({
                             start: event.start!,
-                            end: end
+                            end: end,
                           }),
                         );
                         onEventChange?.({
@@ -468,9 +439,10 @@ export function NewEventForm({
                             field.value.hour,
                             field.value.minute,
                           ),
-                          end: added
+                          end: added,
                         });
                       }}
+                      aria-label="Start Time"
                     />
                   </FormControl>
                   <FormMessage />
@@ -505,9 +477,10 @@ export function NewEventForm({
                           return;
                         }
                         onEventChange?.({
-                          end: end
+                          end: end,
                         });
                       }}
+                      aria-label="End Time"
                     />
                   </FormControl>
                   <FormMessage />
@@ -531,16 +504,18 @@ export function NewEventForm({
                           onClose();
                           return;
                         }
-                        const end = event.end ? new Date(
-                          date.getFullYear(),
-                          date.getMonth(),
-                          date.getDate(),
-                          event.end.getHours(),
-                          event.end.getMinutes(),
-                        ) : event.start!;
+                        const end = event.end
+                          ? new Date(
+                              date.getFullYear(),
+                              date.getMonth(),
+                              date.getDate(),
+                              event.end.getHours(),
+                              event.end.getMinutes(),
+                            )
+                          : event.start!;
                         field.onChange(end);
                         onEventChange?.({
-                          end
+                          end,
                         });
                       }}
                     />
@@ -593,7 +568,7 @@ export function NewEventForm({
             <Button variant="outline" onClick={() => onClose()} type="button">
               Cancel
             </Button>
-            <Button type="submit">
+            <Button type="submit" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting ? (
                 <Spinner className="w-5 h-5 animate-spin" />
               ) : (

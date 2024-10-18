@@ -4,7 +4,7 @@ import { NotePencil } from "@phosphor-icons/react";
 import { ScheduleCalendarEvent } from "@/lib/hooks/use-schedule-calendar-events";
 import { RemoveEventButton } from "@/lib/components/schedule/schedule-actions-panel/event/remove-event-button";
 import { EventColorPicker } from "@/lib/components/schedule/schedule-actions-panel/event/event-color-picker";
-import { isCourseScheduleCalendarEvent } from '@/lib/hooks/use-schedule-calendar-events';
+import { isCourseScheduleCalendarEvent } from "@/lib/hooks/use-schedule-calendar-events";
 import { ScheduleActionsPanelEventsListCourseEventContent } from "./event-course-content";
 import { ScheduleActionsPanelEventsListCustomEventContent } from "./event-custom-content";
 import { Button } from "@/lib/components/ui/button";
@@ -33,14 +33,22 @@ export function ScheduleActionsPanelEventsListEvent({
       <div className="flex justify-end gap-1">
         <EventColorPicker event={event} />
         {!isCourseEvent && (
-          <Button variant="ghost" size="icon" onClick={() => setIsEditing(true)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsEditing(true)}
+          >
             <NotePencil className="w-5 h-5" />
           </Button>
         )}
         <RemoveEventButton event={event} />
       </div>
       {isEditing && !isCourseEvent && (
-        <EditEventDialog event={event} isOpen={isEditing} onClose={() => setIsEditing(false)} />
+        <EditEventDialog
+          event={event}
+          isOpen={isEditing}
+          onClose={() => setIsEditing(false)}
+        />
       )}
     </div>
   );

@@ -94,16 +94,11 @@ CREATE TABLE "custom_schedule_events" (
     "schedule_id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "start" TIMESTAMP(3) NOT NULL,
-    "end" TIMESTAMP(3) NOT NULL,
-    "frequency" INTEGER,
-    "interval" INTEGER,
-    "days" INTEGER[],
-    "weeks" TEXT[],
-    "months" TEXT[],
+    "start" TIMESTAMPTZ NOT NULL,
+    "end" TIMESTAMPTZ NOT NULL,
     "color" TEXT NOT NULL,
     "repeatability" "CustomScheduleEventRepeatability" NOT NULL,
-    "until" TIMESTAMP(3),
+    "recurrence" JSONB,
 
     CONSTRAINT "custom_schedule_events_pkey" PRIMARY KEY ("id")
 );

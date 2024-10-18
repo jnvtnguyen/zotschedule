@@ -72,9 +72,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <Meta />
       </Head>
       <Body>
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
         <Scripts />
         <ScrollRestoration getKey={(location) => location.pathname} />
       </Body>

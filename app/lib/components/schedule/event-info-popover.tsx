@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { format } from "date-fns";
 import { EventImpl } from "@fullcalendar/core/internal";
 import { EventApi } from "@fullcalendar/core";
@@ -8,8 +9,10 @@ import { FREQUENCY_TO_LABEL } from "@/lib/uci/events/types";
 import {
   isCourseScheduleCalendarEvent,
   ScheduleCalendarEvent,
+  useScheduleCalendarCustomEvents,
 } from "@/lib/hooks/use-schedule-calendar-events";
 import { SECTION_TYPE_TO_LABEL } from "@/lib/uci/offerings/types";
+import { useSchedule } from "@/lib/hooks/use-schedule";
 import { EventPopover, EventPopoverProps } from "./event-popover";
 import { EventColorPicker } from "./schedule-actions-panel/event/event-color-picker";
 import { RemoveEventButton } from "./schedule-actions-panel/event/remove-event-button";
@@ -18,19 +21,29 @@ import { EditEventButton } from "./edit-event-button";
 
 export type EventInfoPopoverProps = Omit<
   EventPopoverProps,
-  "title" | "children"
+  "title" | "children" | "anchor"
 > & {
   event: EventImpl | EventApi;
 };
 
 export function EventInfoPopover({
-  anchor,
   event: base,
   onClose,
   isDragging,
 }: EventInfoPopoverProps) {
+  const schedule = useSchedule((state) => state.schedule);
+  if (!schedule) {
+    return;
+  }
   const event = base.extendedProps.event as ScheduleCalendarEvent;
   const isCourseEvent = isCourseScheduleCalendarEvent(event);
+  const events = useScheduleCalendarCustomEvents(schedule.id);
+  const selector = `.event-${event.id}-${base.extendedProps.occurence}`;
+  const [anchor, setAnchor] = useState(document.querySelector(selector)?.parentElement as HTMLDivElement);
+
+  useEffect(() => {
+    setAnchor(document.querySelector(selector)?.parentElement as HTMLDivElement);
+  }, [events.data]);
 
   return (
     <EventPopover

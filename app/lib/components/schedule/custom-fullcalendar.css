@@ -60,7 +60,8 @@ td[role="presentation"] {
   background-color: #255799;
 }
 
-.fc-timegrid-col.fc-day-today, .fc-daygrid-day.fc-day-today {
+.fc-timegrid-col.fc-day-today,
+.fc-daygrid-day.fc-day-today {
   @apply bg-primary-foreground !important;
 }
 

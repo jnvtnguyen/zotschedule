@@ -2,9 +2,12 @@ import { useState } from "react";
 import { addHours } from "date-fns";
 import { PlusIcon } from "@radix-ui/react-icons";
 
-import { useScheduleCalendarCourseEvents, useScheduleCalendarCustomEvents } from "@/lib/hooks/use-schedule-calendar-events";
+import {
+  useScheduleCalendarCourseEvents,
+  useScheduleCalendarCustomEvents,
+} from "@/lib/hooks/use-schedule-calendar-events";
 import { useSchedule } from "@/lib/hooks/use-schedule";
-import { NEW_EVENT } from '@/lib/components/schedule/schedule-calendar';
+import { NEW_EVENT } from "@/lib/components/schedule/schedule-calendar";
 import { Button } from "@/lib/components/ui/button";
 import { Separator } from "@/lib/components/ui/separator";
 import { ScheduleActionsPanelCourseEventsList } from "./course-events-list";
@@ -30,9 +33,7 @@ export function ScheduleActionsPanelEventsTab() {
     <div className="h-full w-full space-y-2">
       <h2 className="text-xl font-semibold">Courses</h2>
       <Separator />
-      <ScheduleActionsPanelCourseEventsList
-        events={courses.data}
-      />
+      <ScheduleActionsPanelCourseEventsList events={courses.data} />
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Custom</h2>
         <Button size="icon" variant="ghost" onClick={() => setIsCreating(true)}>
@@ -40,11 +41,13 @@ export function ScheduleActionsPanelEventsTab() {
         </Button>
       </div>
       <Separator />
-      <ScheduleActionsPanelCustomEventsList
-        events={customs.data}
-      />
+      <ScheduleActionsPanelCustomEventsList events={customs.data} />
       {isCreating && (
-        <EditEventDialog isOpen={isCreating} onClose={() => setIsCreating(false)} event={NEW_EVENT(new Date(), addHours(new Date(), 1), schedule.id)} />
+        <EditEventDialog
+          isOpen={isCreating}
+          onClose={() => setIsCreating(false)}
+          event={NEW_EVENT(new Date(), addHours(new Date(), 1), schedule.id)}
+        />
       )}
     </div>
   );

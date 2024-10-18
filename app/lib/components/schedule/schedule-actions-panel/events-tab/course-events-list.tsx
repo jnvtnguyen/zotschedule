@@ -18,8 +18,9 @@ export function ScheduleActionsPanelCourseEventsList({
         <div className="max-w-xl text-center space-y-2">
           <h3 className="text-lg font-semibold">No Course Events</h3>
           <p className="text-sm">
-            Looks like you haven't saved any course events yet. Search for a course
-            in the search tab above and add it to your schedule to see the course here.
+            Looks like you haven't saved any course events yet. Search for a
+            course in the search tab above and add it to your schedule to see
+            the course here.
           </p>
         </div>
       </div>

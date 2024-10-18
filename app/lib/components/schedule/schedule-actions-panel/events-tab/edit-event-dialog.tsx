@@ -1,6 +1,11 @@
 import { useState } from "react";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/lib/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/lib/components/ui/dialog";
 import { CustomScheduleCalendarEvent } from "@/lib/hooks/use-schedule-calendar-events";
 import { NewEventForm } from "@/lib/components/schedule/new-event-form";
 import { useSchedule } from "@/lib/hooks/use-schedule";
@@ -9,7 +14,7 @@ type EditEventDialogProps = {
   event: CustomScheduleCalendarEvent;
   isOpen: boolean;
   onClose: () => void;
-}
+};
 
 export function EditEventDialog({
   event,
@@ -26,19 +31,23 @@ export function EditEventDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent isCloseable>
         <DialogHeader>
-          <DialogTitle>{data.id === "new" ? "New Event" : "Edit Event"}</DialogTitle>
+          <DialogTitle>
+            {data.id === "new" ? "New Event" : "Edit Event"}
+          </DialogTitle>
         </DialogHeader>
         <NewEventForm
           schedule={schedule}
           event={data}
           onClose={onClose}
           isLocalColor={false}
-          onEventChange={(changes) => setData({
-            ...data,
-            ...changes
-          })}
+          onEventChange={(changes) =>
+            setData({
+              ...data,
+              ...changes,
+            })
+          }
         />
       </DialogContent>
     </Dialog>
   );
-};
+}

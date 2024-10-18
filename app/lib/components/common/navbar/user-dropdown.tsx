@@ -50,9 +50,15 @@ export function UserDropdown({ user }: UserDropdownProps) {
           <DropdownMenuSubTrigger>Theme</DropdownMenuSubTrigger>
           <DropdownMenuPortal>
             <DropdownMenuSubContent>
-              <DropdownMenuItem onSelect={() => setTheme("system")}>System</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setTheme("light")}>Light</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setTheme("dark")}>Dark</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setTheme("system")}>
+                System
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setTheme("light")}>
+                Light
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setTheme("dark")}>
+                Dark
+              </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuPortal>
         </DropdownMenuSub>

@@ -5,9 +5,7 @@ import { Button } from "@/lib/components/ui/button";
 import { useSchedule } from "@/lib/hooks/use-schedule";
 import { useScheduleCalendarCourseEvents } from "@/lib/hooks/use-schedule-calendar-events";
 import { useScheduleActionsPanel } from "@/lib/components/schedule/schedule-actions-panel/context";
-import {
-  DEFAULT_EVENT_COLOR,
-} from "@/lib/uci/events/types";
+import { DEFAULT_EVENT_COLOR } from "@/lib/uci/events/types";
 import { useEventMutations } from "@/lib/components/schedule/schedule-actions-panel/event/event-mutations";
 import { RemoveEventButton } from "@/lib/components/schedule/schedule-actions-panel/event/remove-event-button";
 
@@ -29,9 +27,7 @@ export function ScheduleActionsPanelOfferingCourseSectionActions({
   if (events.status === "pending") return <></>;
   if (events.status === "error") return <></>;
 
-  const event = events.data.find(
-    (event) => event.sectionCode === section.code,
-  );
+  const event = events.data.find((event) => event.sectionCode === section.code);
 
   return (
     <>

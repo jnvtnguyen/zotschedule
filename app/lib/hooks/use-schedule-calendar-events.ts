@@ -2,11 +2,7 @@ import { FetchQueryOptions, useQuery } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/start";
 import superjson from "superjson";
 
-import {
-  ScheduleEvent as BaseScheduleEvent,
-  CustomScheduleEvent,
-  CourseScheduleEvent,
-} from "@/lib/database/types";
+import { CustomScheduleEvent, CourseScheduleEvent } from "@/lib/database/types";
 import { database } from "@/lib/database";
 import { getWebSocInfoBySectionCodes } from "@/lib/uci/offerings";
 import {
@@ -38,6 +34,7 @@ const getScheduleCalendarCustomEvents = createServerFn(
       .where("scheduleId", "=", scheduleId)
       .selectAll()
       .execute();
+
     return superjson.stringify(events);
   },
 );
@@ -53,7 +50,6 @@ const getScheduleCalendarCourseEvents = createServerFn(
     return superjson.stringify(events);
   },
 );
-
 
 export const isCourseScheduleCalendarEvent = (
   event: ScheduleCalendarEvent,
@@ -108,15 +104,11 @@ export const getScheduleCalendarCustomEventsQuery = (
 });
 
 export const useScheduleCalendarCourseEvents = (scheduleId: string) => {
-  const query = useQuery(
-    getScheduleCalendarCourseEventsQuery(scheduleId),
-  );
+  const query = useQuery(getScheduleCalendarCourseEventsQuery(scheduleId));
   return query;
 };
 
 export const useScheduleCalendarCustomEvents = (scheduleId: string) => {
-  const query = useQuery(
-    getScheduleCalendarCustomEventsQuery(scheduleId),
-  );
+  const query = useQuery(getScheduleCalendarCustomEventsQuery(scheduleId));
   return query;
 };

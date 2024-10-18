@@ -3,8 +3,7 @@ import { getFormattedRange } from "@/lib/components/schedule/schedule-calendar";
 
 type ScheduleActionsPanelEventsListCustomEventContentProps = {
   event: CustomScheduleCalendarEvent;
-}
-
+};
 
 export function ScheduleActionsPanelEventsListCustomEventContent({
   event,

@@ -62,7 +62,13 @@ const createSchedule = createServerFn(
       .execute();
     const schedule = await database
       .insertInto("schedules")
-      .values({ name, userId, isDefault: true, showWeekends: true, view: "timeGridWeek" })
+      .values({
+        name,
+        userId,
+        isDefault: true,
+        showWeekends: true,
+        view: "timeGridWeek",
+      })
       .returningAll()
       .executeTakeFirstOrThrow();
     return {

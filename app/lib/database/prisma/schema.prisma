@@ -124,17 +124,12 @@ model CustomScheduleEvent {
   schedule    Schedule @relation(fields: [schedule_id], references: [id], onDelete: Cascade)
   title String
   description String
-  start DateTime
-  end DateTime
-  /// @kyselyType(ColumnType<import('rrule').Frequency, number, number>)
-  frequency Int?
-  interval Int?
-  days Int[]
-  weeks String[]
-  months String[]
+  start DateTime @db.Timestamptz()
+  end DateTime @db.Timestamptz()
   color String
   repeatability CustomScheduleEventRepeatability
-  until DateTime?
+  /// @kyselyType(ColumnType<import('@/lib/uci/events/types').Recurrence, string, string>)
+  recurrence Json?
 
   @@map("custom_schedule_events")
 }

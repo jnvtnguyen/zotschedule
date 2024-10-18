@@ -6,16 +6,14 @@ import { useScheduleCalendar } from "./context";
 
 type EditEventButtonProps = {
   event: CustomScheduleCalendarEvent;
-}
+};
 
-export function EditEventButton({
-  event
-}: EditEventButtonProps) {
+export function EditEventButton({ event }: EditEventButtonProps) {
   const setEditing = useScheduleCalendar((state) => state.setEditing);
 
   return (
     <Button variant="ghost" size="icon" onClick={() => setEditing(event)}>
       <NotePencil className="w-5 h-5" />
     </Button>
-  )
+  );
 }

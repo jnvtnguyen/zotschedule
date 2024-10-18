@@ -1,10 +1,10 @@
-import { cn } from '@/lib/utils/style';
-import { ClockIcon } from '@radix-ui/react-icons';
-import { useRef } from 'react';
-import { useDateSegment, useLocale, useTimeField } from 'react-aria';
-import { TimeFieldStateOptions, useTimeFieldState } from 'react-stately';
+import { cn } from "@/lib/utils/style";
+import { ClockIcon } from "@radix-ui/react-icons";
+import { useRef } from "react";
+import { useDateSegment, useLocale, useTimeField } from "react-aria";
+import { TimeFieldStateOptions, useTimeFieldState } from "react-stately";
 
-export function TimePicker(props: Omit<TimeFieldStateOptions, 'locale'>) {
+export function TimePicker(props: Omit<TimeFieldStateOptions, "locale">) {
   let { locale } = useLocale();
   let state = useTimeFieldState({
     ...props,
@@ -17,7 +17,11 @@ export function TimePicker(props: Omit<TimeFieldStateOptions, 'locale'>) {
   return (
     <div className="flex flex-col flex-start">
       <span {...labelProps}>{props.label}</span>
-      <div {...fieldProps} ref={ref} className="flex items-center justify-between h-9 w-full rounded-md border border-input bg-transparent px-4 pl-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-within:ring-1 focus-within:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
+      <div
+        {...fieldProps}
+        ref={ref}
+        className="flex items-center justify-between h-9 w-full rounded-md border border-input bg-transparent px-4 pl-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-within:ring-1 focus-within:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+      >
         {state.segments.map((segment, i) => (
           <DateSegmentView key={i} segment={segment} state={state} />
         ))}
@@ -30,14 +34,13 @@ export function TimePicker(props: Omit<TimeFieldStateOptions, 'locale'>) {
 type DataSegmentViewProps = {
   segment: any;
   state: any;
-}
+};
 
 function DateSegmentView({ segment, state }: DataSegmentViewProps) {
   let ref = useRef<HTMLDivElement>(null);
-  let { segmentProps: {
-    onKeyDown,
-    ...segmentProps
-  } } = useDateSegment(segment, state, ref);
+  let {
+    segmentProps: { onKeyDown, ...segmentProps },
+  } = useDateSegment(segment, state, ref);
 
   return (
     <div
@@ -50,7 +53,7 @@ function DateSegmentView({ segment, state }: DataSegmentViewProps) {
       {...segmentProps}
       ref={ref}
       className={cn(
-        "px-[1px] focus:bg-primary focus:text-primary-foreground focus:outline-none focus:border-r tabular-nums text-end font-normal rounded-md"
+        "px-[1px] focus:bg-primary focus:text-primary-foreground focus:outline-none focus:border-r tabular-nums text-end font-normal rounded-md",
       )}
     >
       {segment.text}

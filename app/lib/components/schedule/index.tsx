@@ -48,11 +48,7 @@ export function ScheduleView({ user }: ScheduleViewProps) {
             <ScheduleCalendar width={width} />
           </ResizablePanel>
           <ResizableHandle withHandle />
-          <ResizablePanel
-            minSize={25}
-            defaultSize={35}
-            className="h-full"
-          >
+          <ResizablePanel minSize={25} defaultSize={35} className="h-full">
             <ScheduleActionsPanel />
           </ResizablePanel>
         </ResizablePanelGroup>

@@ -127,11 +127,17 @@ export function LoginForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={form.formState.isSubmitSuccessful || form.formState.isSubmitting}>
-          {form.formState.isSubmitting ?
-            <Spinner className="animate-spin w-5 h-5" /> :
-            "Log in"
+        <Button
+          type="submit"
+          disabled={
+            form.formState.isSubmitSuccessful || form.formState.isSubmitting
           }
+        >
+          {form.formState.isSubmitting ? (
+            <Spinner className="animate-spin w-5 h-5" />
+          ) : (
+            "Log in"
+          )}
         </Button>
       </form>
     </Form>

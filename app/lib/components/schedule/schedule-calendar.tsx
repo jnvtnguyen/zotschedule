@@ -11,12 +11,7 @@ import {
   SlotLabelContentArg,
 } from "@fullcalendar/core";
 import { EventImpl } from "@fullcalendar/core/internal";
-import {
-  addHours,
-  format,
-  isEqual,
-  roundToNearestHours,
-} from "date-fns";
+import { addHours, format, isEqual, roundToNearestHours } from "date-fns";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
@@ -31,7 +26,10 @@ import { useScheduleCalendar } from "@/lib/components/schedule/context";
 import { useSchedule } from "@/lib/hooks/use-schedule";
 import { ScheduleEvent } from "@/lib/database/types";
 import { DEFAULT_EVENT_COLOR } from "@/lib/uci/events/types";
-import { useCalendarEvents } from "./use-calendar-events";
+import {
+  COMMON_DAYS_TO_RRULE_DAYS,
+  useCalendarEvents,
+} from "./use-calendar-events";
 import { NewEventPopover } from "./new-event-popover";
 import {
   isCourseScheduleCalendarEvent,
@@ -59,7 +57,7 @@ export const NEW_EVENT = (start: Date, end: Date, scheduleId: string) => ({
   weeks: [],
   months: [],
   repeatability: CustomScheduleEventRepeatability.NONE,
-  until: null
+  until: null,
 });
 
 export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
@@ -67,11 +65,9 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   if (!schedule) {
     return;
   }
-  const [anchor, setAnchor] = useState<HTMLDivElement | undefined>();
   const [selected, setSelected] = useState<EventImpl | EventApi | undefined>();
   const [isDragging, setIsDragging] = useState(false);
-  const animations = new Controller({
-  });
+  const animations = new Controller({});
   const isNewEvent = selected?.extendedProps.event.id === "new";
   const queryClient = useQueryClient();
   const view = useScheduleCalendar((state) => state.view);
@@ -82,9 +78,8 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   const { events, isLoading } = useCalendarEvents(schedule.id, view, date);
   const ref = useRef<FullCalendar>(null);
 
-  const reset = async (anchor?: HTMLDivElement, selected?: EventImpl | EventApi, skip?: boolean) => {
-    setAnchor(anchor);
-    setSelected(selected); 
+  const reset = async (selected?: EventImpl | EventApi, skip?: boolean) => {
+    setSelected(selected);
     if (isNewEvent) {
       queryClient.setQueryData(
         ["schedule-custom-events", schedule.id],
@@ -92,7 +87,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
           return events.filter((event) => event.id !== "new");
         },
       );
-    } 
+    }
     if (editing && !skip) {
       setEditing(undefined);
       await queryClient.invalidateQueries({
@@ -113,8 +108,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
     queueMicrotask(() => {
       if (ref.current) {
         ref.current.getApi().gotoDate(date);
-        animations.start({
-        });
+        animations.start({});
       }
     });
   }, [date]);
@@ -136,8 +130,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
   }, [isNewEvent]);
 
   useEffect(() => {
-    animations.start({
-    });
+    animations.start({});
   }, [isLoading]);
 
   useEffect(() => {
@@ -148,13 +141,11 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
     queueMicrotask(() => {
       if (ref.current) {
         const events = ref.current.getApi().getEvents();
-        const event = events.find((e) => e.extendedProps.event.id === editing?.id);
+        const event = events.find(
+          (e) => e.extendedProps.event.id === editing?.id,
+        );
         if (event) {
-          reset(
-            document.querySelector(`.event-${editing.id}`)?.parentElement as HTMLDivElement,
-            event,
-            true
-          );
+          reset(event, true);
         }
       }
     });
@@ -192,7 +183,9 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
             return {
               ...e,
               start: info.event.start,
-              end: isEqual(event.start, event.end) ? info.event.start : info.event.end,
+              end: isEqual(event.start, event.end)
+                ? info.event.start
+                : info.event.end,
             };
           }
           return e;
@@ -203,10 +196,10 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
 
   const onEventClick = (info: EventClickArg) => {
     const event = info.event.extendedProps.event as ScheduleCalendarEvent;
-    if (event.id === "new") {
+    if (event.id === "new" || editing?.id === event.id) {
       return;
     }
-    reset(info.el.parentElement as HTMLDivElement, info.event);
+    reset(info.event);
   };
 
   return (
@@ -221,7 +214,12 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
             height="100%"
             initialDate={date}
             initialView={view}
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
+            plugins={[
+              dayGridPlugin,
+              timeGridPlugin,
+              interactionPlugin,
+              listPlugin,
+            ]}
             ref={ref}
             events={events}
             allDaySlot={false}
@@ -231,19 +229,18 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
             selectMinDistance={5}
             selectMirror={true}
             slotDuration={{
-              hours: 1
+              hours: 1,
             }}
             snapDuration={{
               minutes: 15,
             }}
             slotMinTime={{
-              hours: 1
+              hours: 1,
             }}
             slotMaxTime={{
-              hours: 25
+              hours: 25,
             }}
             expandRows={true}
-            selectable={!anchor}
             editable={true}
             droppable={true}
             select={onSelect}
@@ -256,28 +253,22 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
               if (event.isMirror) {
                 return ["mirror"];
               }
-              if (event.event.extendedProps.event.id === "new") {
-                return ["new-event"];
-              }
               return [
-                `event-${event.event.extendedProps.event.id}`,
-                editing && event.event.extendedProps.event.id === editing.id ? "editing" : "",
+                `event-${event.event.extendedProps.event.id}-${event.event.extendedProps.occurence}`,
+                editing && event.event.extendedProps.event.id === editing.id
+                  ? "editing"
+                  : "",
+                event.event.extendedProps.event.id === "new" ? "new-event" : "",
               ];
             }}
             eventResizeStart={() => setIsDragging(true)}
             eventResizeStop={() => {
               setIsDragging(false);
-              setAnchor(
-                document.querySelector(".fc-event.new-event")?.parentElement as HTMLDivElement,
-              );
             }}
             eventResize={(info) => onEventAction(info)}
             eventDragStart={() => setIsDragging(true)}
             eventDragStop={() => {
               setIsDragging(false);
-              setAnchor(
-                document.querySelector(".fc-event.new-event")?.parentElement as HTMLDivElement,
-              );
             }}
             eventDrop={(info) => onEventAction(info)}
             eventDidMount={(info) => {
@@ -288,14 +279,16 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
               if (info.isMirror) {
                 return;
               }
-              const event = info.event.extendedProps.event as ScheduleCalendarEvent;
+              const event = info.event.extendedProps
+                .event as ScheduleCalendarEvent;
               if (event.id === "new") {
-                setAnchor(info.el.parentElement as HTMLDivElement);
                 setSelected(info.event);
                 return;
               }
-              if (event.id === selected?.extendedProps.event.id) {
-                setAnchor(info.el.parentElement as HTMLDivElement);
+              if (
+                event.id === selected?.extendedProps.event.id &&
+                (isNewEvent || editing)
+              ) {
                 setSelected(info.event);
               }
             }}
@@ -304,18 +297,16 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
           />
         </animated.div>
       )}
-      {anchor && selected && (isNewEvent || editing) && (
+      {selected && (isNewEvent || editing) && (
         <NewEventPopover
           event={selected}
-          anchor={anchor}
           isDragging={isDragging}
           onClose={reset}
         />
       )}
-      {anchor && selected && !isNewEvent && !editing && (
+      {selected && !isNewEvent && !editing && (
         <EventInfoPopover
           event={selected}
-          anchor={anchor}
           isDragging={isDragging}
           onClose={reset}
         />
@@ -326,18 +317,18 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
 
 export const getFormattedRange = (start: Date, end: Date | null) => {
   const formatted = {
-    start: '',
-    end: ''
-  }
+    start: "",
+    end: "",
+  };
 
   const meridiems = {
-    start: format(start, 'a'),
-    end: end ? format(end, 'a') : ''
+    start: format(start, "a"),
+    end: end ? format(end, "a") : "",
   };
 
   if (start.getMinutes() === 0) {
     if (meridiems.start === meridiems.end) {
-      formatted.start = format(start, 'h');
+      formatted.start = format(start, "h");
     } else {
       formatted.start = format(start, "h a");
     }
@@ -360,7 +351,7 @@ export const getFormattedRange = (start: Date, end: Date | null) => {
   }
 
   return formatted;
-}
+};
 
 function SlotLabelContent(props: SlotLabelContentArg) {
   return <p className="text-[0.8rem]">{format(props.date, "hh:mm a")}</p>;
@@ -380,46 +371,42 @@ function EventContent(props: EventContentArg) {
   const extended = props.event.extendedProps;
   const event = extended.event as ScheduleCalendarEvent;
   const formatted = getFormattedRange(base.start!, base.end);
-  const height = props.isMirror ?
-    document.querySelector(".fc-event-mirror")?.clientHeight : 
-    base.extendedProps.height
+  const height = props.isMirror
+    ? document.querySelector(".fc-event-mirror")?.clientHeight
+    : base.extendedProps.height;
 
   const classes = {
     container: cn("flex flex-col", {
-      "flex-row gap-1 w-full": height < 30
+      "flex-row gap-1 w-full": height < 30,
     }),
     title: cn("font-semibold text-[0.8rem] truncate", {
       "text-xs": height < 40,
-      "text-[0.64rem]": height < 20
+      "text-[0.64rem]": height < 20,
     }),
-  }
+  };
 
   const content = {
-    title: height < 30 ? (
-      <p className={classes.title}>
-        {base.title === "" ? "(No Title)" : base.title}, {" "}
-        {formatted.start}
-        {base.end ? ` - ${formatted.end}` : ""}
-      </p>
-    ) : (
-      <>
+    title:
+      height < 30 ? (
         <p className={classes.title}>
-          {base.title === "" ? "(No Title)" : base.title}
-        </p>
-        <p className="text-xs">
-          {formatted.start}
+          {base.title === "" ? "(No Title)" : base.title}, {formatted.start}
           {base.end ? ` - ${formatted.end}` : ""}
-        </p> 
-      </>
-    )
+        </p>
+      ) : (
+        <>
+          <p className={classes.title}>
+            {base.title === "" ? "(No Title)" : base.title}
+          </p>
+          <p className="text-xs">
+            {formatted.start}
+            {base.end ? ` - ${formatted.end}` : ""}
+          </p>
+        </>
+      ),
   };
 
   if (props.isMirror) {
-    return (
-      <div className={classes.container}>
-        {content.title}
-      </div>
-    );
+    return <div className={classes.container}>{content.title}</div>;
   }
 
   if (isCourseScheduleCalendarEvent(event)) {
@@ -432,19 +419,12 @@ function EventContent(props: EventContentArg) {
           <p>{event.info.section.type}</p>
         </div>
         <p className="text-xs truncate">
-          {formatted.start} -{" "}
-          {formatted.end}, {extended.building}{" "}
+          {formatted.start} - {formatted.end}, {extended.building}{" "}
           {extended.room}
         </p>
       </div>
     );
   }
 
-  return (
-    <div
-      className={classes.container}
-    >
-      {content.title}
-    </div>
-  );
+  return <div className={classes.container}>{content.title}</div>;
 }

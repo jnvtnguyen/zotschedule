@@ -51,7 +51,7 @@ export function EventColorPicker({
   onChange,
   icon = "palette",
   isInDatabase = true,
-  isLocal = true
+  isLocal = true,
 }: EventColorPickerProps) {
   const { toast } = useToast();
   const color = useMemo(() => event.color, [event.color]);

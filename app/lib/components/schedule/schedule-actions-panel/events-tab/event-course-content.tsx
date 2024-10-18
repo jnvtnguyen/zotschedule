@@ -3,8 +3,7 @@ import { SECTION_TYPE_TO_LABEL } from "@/lib/uci/offerings/types";
 
 type ScheduleActionsPanelEventsListCourseEventContentProps = {
   event: CourseScheduleCalendarEvent;
-}
-
+};
 
 export function ScheduleActionsPanelEventsListCourseEventContent({
   event,

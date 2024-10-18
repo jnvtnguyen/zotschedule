@@ -1,5 +1,3 @@
 export function ScheduleActionsPanelMapTab() {
-  return (
-    <></>
-  );
+  return <></>;
 }

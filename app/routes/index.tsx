@@ -1,26 +1,29 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { getSchedulesQuery, useSchedules } from '@/lib/hooks/use-schedules'
-import { getTermCalendarsQuery } from '@/lib/hooks/use-term-calendars'
-import { CreateScheduleDialog } from '@/lib/components/schedule/create-schedule-dialog'
-import { createScheduleStore, ScheduleContext } from '@/lib/hooks/use-schedule'
-import { getSearchAliasesQuery } from '@/lib/hooks/use-search-aliases'
-import { getWebSocTermOptionsQuery } from '@/lib/hooks/use-websoc-term-options'
-import { AuthUserContext, createAuthUserStore } from '@/lib/hooks/use-auth-user'
-import customFullCalendarCSS from '@/lib/components/schedule/custom-fullcalendar.css?url'
-import { ScheduleView } from '@/lib/components/schedule'
+import { getSchedulesQuery, useSchedules } from "@/lib/hooks/use-schedules";
+import { getTermCalendarsQuery } from "@/lib/hooks/use-term-calendars";
+import { CreateScheduleDialog } from "@/lib/components/schedule/create-schedule-dialog";
+import { createScheduleStore, ScheduleContext } from "@/lib/hooks/use-schedule";
+import { getSearchAliasesQuery } from "@/lib/hooks/use-search-aliases";
+import { getWebSocTermOptionsQuery } from "@/lib/hooks/use-websoc-term-options";
+import {
+  AuthUserContext,
+  createAuthUserStore,
+} from "@/lib/hooks/use-auth-user";
+import customFullCalendarCSS from "@/lib/components/schedule/custom-fullcalendar.css?url";
+import { ScheduleView } from "@/lib/components/schedule";
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute("/")({
   meta: () => [
     {
-      title: 'Schedule',
+      title: "Schedule",
     },
   ],
-  links: () => [{ rel: 'stylesheet', href: customFullCalendarCSS }],
+  links: () => [{ rel: "stylesheet", href: customFullCalendarCSS }],
   component: Schedule,
   beforeLoad: async ({ context: { session, queryClient } }) => {
     if (!session.isLoggedIn || !session.user) {
-      throw redirect({ to: '/auth/login' })
+      throw redirect({ to: "/auth/login" });
     }
     await queryClient.prefetchQuery(getSchedulesQuery(session.user.id));
     await queryClient.prefetchQuery(getWebSocTermOptionsQuery);
@@ -29,20 +32,20 @@ export const Route = createFileRoute('/')({
 
     return {
       session,
-    }
+    };
   },
-})
+});
 
 function Schedule() {
-  const { session } = Route.useRouteContext()
-  const { data: schedules, status } = useSchedules(session.user.id)
+  const { session } = Route.useRouteContext();
+  const { data: schedules, status } = useSchedules(session.user.id);
 
-  if (status === 'pending') {
-    return <></>
+  if (status === "pending") {
+    return <></>;
   }
 
-  if (status === 'error') {
-    return <></>
+  if (status === "error") {
+    return <></>;
   }
 
   return (
@@ -59,5 +62,5 @@ function Schedule() {
         </ScheduleContext.Provider>
       )}
     </AuthUserContext.Provider>
-  )
+  );
 }

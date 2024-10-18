@@ -33,19 +33,7 @@ import {
 const baseCustomRecurrenceFormSchema = z.object({
   frequency: z.nativeEnum(Frequency),
   interval: z.number().min(1),
-  ends: z.date().optional(),
-});
-
-const secondlyRecurrenceFormSchema = z.object({
-  frequency: z.literal(Frequency.SECONDLY),
-});
-
-const minutelyRecurrenceFormSchema = z.object({
-  frequency: z.literal(Frequency.MINUTELY),
-});
-
-const hourlyRecurrenceFormSchema = z.object({
-  frequency: z.literal(Frequency.HOURLY),
+  until: z.date().optional(),
 });
 
 const dailyRecurrenceFormSchema = z.object({
@@ -59,17 +47,16 @@ const weeklyRecurrenceFormSchema = z.object({
 
 const monthlyRecurrenceFormSchema = z.object({
   frequency: z.literal(Frequency.MONTHLY),
+  weeks: z.array(z.number()),
 });
 
 const yearlyRecurrenceFormSchema = z.object({
   frequency: z.literal(Frequency.YEARLY),
+  months: z.array(z.number()),
 });
 
 const customRecurrenceFormSchema = z
   .discriminatedUnion("frequency", [
-    secondlyRecurrenceFormSchema,
-    minutelyRecurrenceFormSchema,
-    hourlyRecurrenceFormSchema,
     dailyRecurrenceFormSchema,
     weeklyRecurrenceFormSchema,
     monthlyRecurrenceFormSchema,
@@ -93,19 +80,21 @@ export function CustomRecurrenceForm({
   const FORM_DEFAULTS: CustomRecurrence = {
     frequency: Frequency.WEEKLY,
     interval: 1,
-    ends: addMonths(start, 1),
+    until: addMonths(start, 1),
     days: [DATE_DAY_TO_RRULE_DAY[start.getDay()]],
   };
 
   const form = useForm<CustomRecurrence>({
     resolver: zodResolver(customRecurrenceFormSchema),
-    defaultValues: data ? {
-      ...data,
-      ...FORM_DEFAULTS
-    } : FORM_DEFAULTS
+    defaultValues: data
+      ? {
+          ...data,
+          ...FORM_DEFAULTS,
+        }
+      : FORM_DEFAULTS,
   });
   const [isEnding, setIsEnding] = useState<"never" | "on">(
-    data?.ends ? "on" : "never",
+    data?.until ? "on" : "never",
   );
 
   const interval = form.watch("interval");
@@ -136,7 +125,7 @@ export function CustomRecurrenceForm({
   const onSubmit = (data: z.infer<typeof customRecurrenceFormSchema>) => {
     onClose({
       ...data,
-      ends: isEnding === "never" ? undefined : data.ends,
+      until: isEnding === "never" ? undefined : data.until,
     });
   };
 
@@ -190,7 +179,10 @@ export function CustomRecurrenceForm({
                     <SelectContent>
                       <SelectGroup>
                         {frequencies.map((option) => (
-                          <SelectItem key={option.value} value={option.value.toString()}>
+                          <SelectItem
+                            key={option.value}
+                            value={option.value.toString()}
+                          >
                             {option.label}
                           </SelectItem>
                         ))}
@@ -206,32 +198,30 @@ export function CustomRecurrenceForm({
           <div className="flex flex-col gap-1">
             <p className="text-[0.86rem] text-muted-foreground">Repeats on</p>
             <div className="flex flex-row gap-2">
-              {Object.entries(COMMON_DAYS_TO_RRULE_DAYS).map(
-                ([key, value]) => (
-                  <span key={`days-${value}`}>
-                    <div
-                      className={cn(
-                        "inline-flex items-center justify-center text-muted-foreground bg-secondary w-6 h-6 text-[10px] leading-[1.25rem] cursor-pointer rounded-full border-none",
-                        {
-                          "bg-primary text-white": days.includes(value),
-                        },
-                      )}
-                      onClick={() => {
-                        if (days.includes(value)) {
-                          form.setValue(
-                            "days",
-                            days.filter((d) => d !== value),
-                          );
-                          return;
-                        }
-                        form.setValue("days", [...days, value]);
-                      }}
-                    >
-                      {key}
-                    </div>
-                  </span>
-                ),
-              )}
+              {Object.entries(COMMON_DAYS_TO_RRULE_DAYS).map(([key, value]) => (
+                <span key={`days-${value}`}>
+                  <div
+                    className={cn(
+                      "inline-flex items-center justify-center text-muted-foreground bg-secondary w-6 h-6 text-[10px] leading-[1.25rem] cursor-pointer rounded-full border-none",
+                      {
+                        "bg-primary text-white": days.includes(value),
+                      },
+                    )}
+                    onClick={() => {
+                      if (days.includes(value)) {
+                        form.setValue(
+                          "days",
+                          days.filter((d) => d !== value),
+                        );
+                        return;
+                      }
+                      form.setValue("days", [...days, value]);
+                    }}
+                  >
+                    {key}
+                  </div>
+                </span>
+              ))}
             </div>
           </div>
         )}
@@ -257,7 +247,7 @@ export function CustomRecurrenceForm({
               </div>
               <FormField
                 control={form.control}
-                name="ends"
+                name="until"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>

@@ -3,6 +3,7 @@ import { X } from "@phosphor-icons/react";
 import {
   autoPlacement,
   autoUpdate,
+  computePosition,
   offset,
   useDismiss,
   useFloating,
@@ -32,26 +33,38 @@ export function EventPopover({
   if (!schedule) {
     return;
   }
-  const { refs, floatingStyles, context } = useFloating({
+  const { refs, floatingStyles, context, elements, update } = useFloating({
     strategy: "fixed",
     elements: {
       reference: anchor,
     },
-    middleware: [
-      offset(2),
-      autoPlacement(),
-    ],
-    whileElementsMounted: autoUpdate,
+    middleware: [offset(2), autoPlacement()],
     open: true,
   });
+
+  useEffect(() => {
+    if (elements.reference && elements.floating) {
+      const cleanup = autoUpdate(elements.reference, elements.floating, () => {
+        computePosition(elements.reference!, elements.floating!, {
+          strategy: "fixed",
+        }).then(({ x, y }) => {
+          if ((x !== context.x || y !== context.y) && x > 0 && y > 0) {
+            update();
+          }
+        });
+      });
+
+      return cleanup;
+    }
+  }, [elements.floating, elements.reference, update]);
 
   const dismiss = useDismiss(context, {
     outsidePress: (e: MouseEvent) => {
       if (
         e.target instanceof HTMLElement &&
-        ((e.target.closest(".fc-event") && (
-          document.querySelector(".fc-event.new-event") ||
-          document.querySelector(".fc-event.editing"))) ||
+        ((e.target.closest(".fc-event") &&
+          (document.querySelector(".fc-event.new-event") ||
+            document.querySelector(".fc-event.editing"))) ||
           e.target.tagName === "HTML")
       ) {
         return false;

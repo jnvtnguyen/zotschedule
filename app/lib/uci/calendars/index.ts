@@ -1,6 +1,6 @@
 import { parseHTML } from "linkedom";
 import { parse } from "date-fns";
-import { UTCDate } from '@date-fns/utc';
+import { UTCDate } from "@date-fns/utc";
 
 import { QUARTERS } from "@/lib/uci/offerings/types";
 import { logger } from "@/lib/logger";
@@ -159,7 +159,9 @@ export const getCalendar = async (year: number) => {
         .map((term) => [
           term,
           {
-            scheduleOfClassesAvailable: new UTCDate(scheduleOfClassesAvailable[term]),
+            scheduleOfClassesAvailable: new UTCDate(
+              scheduleOfClassesAvailable[term],
+            ),
             instructionBegins: new UTCDate(instructionBegins[term]),
             instructionEnds: new UTCDate(instructionEnds[term]),
             finalsBegin: new UTCDate(finals[term][0]),
