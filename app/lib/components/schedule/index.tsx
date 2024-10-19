@@ -38,7 +38,7 @@ export function ScheduleView({ user }: ScheduleViewProps) {
       )}
     >
       <ScheduleNavbar user={user} />
-      <div className="h-[calc(100vh-4rem)] w-full">
+      <div className="h-full w-full">
         <div className="hidden md:block w-full h-full">
           <ResizablePanelGroup direction="horizontal">
             <ResizablePanel
@@ -50,7 +50,7 @@ export function ScheduleView({ user }: ScheduleViewProps) {
               <ScheduleCalendar width={width} />
             </ResizablePanel>
             <ResizableHandle withHandle />
-            <ResizablePanel minSize={25} defaultSize={35} className="h-full">
+            <ResizablePanel minSize={25} defaultSize={35} className="h-[calc(100vh-4rem)]">
               <ScheduleActionsPanel />
             </ResizablePanel>
           </ResizablePanelGroup>

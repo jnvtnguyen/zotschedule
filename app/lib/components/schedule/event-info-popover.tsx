@@ -5,7 +5,7 @@ import { EventImpl } from "@fullcalendar/core/internal";
 import { EventApi } from "@fullcalendar/core";
 import { DotFilledIcon } from "@radix-ui/react-icons";
 import { Frequency } from "rrule";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { FREQUENCY_TO_LABEL } from "@/lib/uci/events/types";
 import {
@@ -48,7 +48,7 @@ const changeDeclineStatus = createServerFn(
       .set({
         declined: updates,
       })
-      .execute();
+      .executeTakeFirstOrThrow();
   },
 );
 
@@ -77,39 +77,73 @@ export function EventInfoPopover({
   const [anchor, setAnchor] = useState(
     document.querySelector(selector)?.parentElement as HTMLDivElement,
   );
+  const setDeclinedStatusMutation = useMutation({
+    mutationFn: async (declined: boolean) => {
+      if (!isCourseEvent) {
+        return declined;
+      }
 
-  useEffect(() => {
-    setAnchor(
-      document.querySelector(selector)?.parentElement as HTMLDivElement,
-    );
-  }, [events.data]);
-
-  const onDeclinedChange = async (declined?: boolean) => {
-    if (!isCourseEvent) {
-      return;
-    }
-    onClose();
-    try {
       await changeDeclineStatus({
         event: event,
-        declined: declined ?? false,
+        declined: declined,
         start: base.start!,
       });
-      await queryClient.invalidateQueries({
-        queryKey: ["schedule-course-events", schedule.id],
-      });
-      toast({
-        description: `Going to "${event.info.department.code} ${event.info.course.number} ${SECTION_TYPE_TO_LABEL[event.info.section.type]}" has been ${declined ? "declined" : "accepted"}.`,
-      });
-    } catch (error) {
+      return declined;
+    },
+    onMutate: async (declined: boolean) => {
+      if (!isCourseEvent) {
+        return;
+      }
+
+      onClose();
+      queryClient.setQueryData(
+        ["schedule-course-events", schedule.id],
+        (events: CourseScheduleEvent[]) => {
+          return events.map((e) => {
+            if (e.id === event.id) {
+              return {
+                ...e,
+                declined: declined
+                  // @ts-expect-error
+                  ? e.declined.concat(base.start!)
+                  // @ts-expect-error
+                  : e.declined.filter((date) => !isEqual(date, base.start!)),
+              };
+            }
+            return e;
+          })
+        }
+      );
+    },
+    onError: () => {
       toast({
         title: "Uh oh! Something went wrong.",
         description:
           "Something went wrong while trying to change the declined status.",
         variant: "destructive",
       });
-    }
-  };
+    },
+    onSuccess: async (declined: boolean) => {
+      if (!isCourseEvent) {
+        return;
+      }
+
+      toast({
+        description: `Going to "${event.info.department.code} ${event.info.course.number} ${SECTION_TYPE_TO_LABEL[event.info.section.type]}" has been ${declined ? "declined" : "accepted"}.`,
+      });
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["schedule-course-events", schedule.id],
+      })
+    },
+  })
+
+  useEffect(() => {
+    setAnchor(
+      document.querySelector(selector)?.parentElement as HTMLDivElement,
+    );
+  }, [events.data]);
 
   const footer = () => {
     if (!isCourseEvent) {
@@ -127,7 +161,7 @@ export function EventInfoPopover({
             variant={declined ? "outline" : "default"}
             onClick={() => {
               if (declined) {
-                onDeclinedChange(false);
+                setDeclinedStatusMutation.mutate(false);
               }
             }}
           >
@@ -138,7 +172,7 @@ export function EventInfoPopover({
             variant={!declined ? "outline" : "default"}
             onClick={() => {
               if (!declined) {
-                onDeclinedChange(true);
+                setDeclinedStatusMutation.mutate(true);
               }
             }}
           >

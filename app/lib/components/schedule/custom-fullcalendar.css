@@ -71,7 +71,3 @@ td[role="presentation"] {
 .fc-event.dragging {
   cursor: move !important;
 }
-
-.fc-timegrid-event-harness-inset .fc-timegrid-event {
-  box-shadow: none !important;
-}

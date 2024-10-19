@@ -27,7 +27,7 @@ const add = createServerFn(
             sectionCode: event.sectionCode,
             term: event.term,
             color: event.color,
-            declined: [],
+            declined: []
           })
           .returningAll()
           .executeTakeFirstOrThrow(),
