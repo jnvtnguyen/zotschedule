@@ -350,6 +350,8 @@ export const useCalendarEvents = (
                 until,
                 editable,
                 occurence: index,
+                // @ts-expect-error
+                declined: meeting.declined.some((date) => isEqual(date, start)),
               };
             });
           }

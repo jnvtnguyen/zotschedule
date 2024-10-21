@@ -98,6 +98,7 @@ CREATE TABLE "custom_schedule_events" (
     "end" TIMESTAMPTZ NOT NULL,
     "color" TEXT NOT NULL,
     "repeatability" "CustomScheduleEventRepeatability" NOT NULL,
+    "declined" TIMESTAMPTZ[],
     "recurrence" JSONB,
 
     CONSTRAINT "custom_schedule_events_pkey" PRIMARY KEY ("id")

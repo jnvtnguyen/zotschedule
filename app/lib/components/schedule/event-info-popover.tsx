@@ -25,14 +25,14 @@ import { useToast } from "@/lib/hooks/use-toast";
 import { database } from "@/lib/database";
 import { CourseScheduleEvent } from "@/lib/database/types";
 
-const changeDeclineStatus = createServerFn(
+const setDeclineStatus = createServerFn(
   "POST",
   async ({
     event,
     declined,
     start,
   }: {
-    event: CourseScheduleEvent;
+    event: ScheduleCalendarEvent;
     declined: boolean;
     start: Date;
   }) => {
@@ -42,13 +42,23 @@ const changeDeclineStatus = createServerFn(
       : // @ts-expect-error
         event.declined.filter((date) => date !== start);
 
-    await database
-      .updateTable("courseScheduleEvents")
-      .where("id", "=", event.id)
-      .set({
-        declined: updates,
-      })
-      .executeTakeFirstOrThrow();
+    if (isCourseScheduleCalendarEvent(event)) {
+      await database
+        .updateTable("courseScheduleEvents")
+        .where("id", "=", event.id)
+        .set({
+          declined: updates,
+        })
+        .executeTakeFirstOrThrow();
+    } else {
+      await database
+        .updateTable("customScheduleEvents")
+        .where("id", "=", event.id)
+        .set({
+          declined: updates,
+        })
+        .executeTakeFirstOrThrow();
+    }
   },
 );
 
@@ -77,24 +87,31 @@ export function EventInfoPopover({
   const [anchor, setAnchor] = useState(
     document.querySelector(selector)?.parentElement as HTMLDivElement,
   );
-  const setDeclinedStatusMutation = useMutation({
-    mutationFn: async (declined: boolean) => {
-      if (!isCourseEvent) {
-        return declined;
-      }
-
-      await changeDeclineStatus({
+  const setDeclinedStatusMutation = useMutation<{
+    event: ScheduleCalendarEvent;
+    declined: boolean;
+  }, unknown, {
+    event: ScheduleCalendarEvent;
+    declined: boolean;
+  }>({
+    mutationFn: async ({
+      event,
+      declined,
+    }) => {
+      await setDeclineStatus({
         event: event,
         declined: declined,
         start: base.start!,
       });
-      return declined;
+      return {
+        event,
+        declined
+      };
     },
-    onMutate: async (declined: boolean) => {
-      if (!isCourseEvent) {
-        return;
-      }
-
+    onMutate: async ({
+      event,
+      declined
+    }) => {
       onClose();
       queryClient.setQueryData(
         ["schedule-course-events", schedule.id],
@@ -123,19 +140,36 @@ export function EventInfoPopover({
         variant: "destructive",
       });
     },
-    onSuccess: async (declined: boolean) => {
-      if (!isCourseEvent) {
+    onSuccess: async ({ declined, event }) => {
+      if (isCourseScheduleCalendarEvent(event)) {
+        toast({
+          description: `Going to "${event.info.department.code} ${event.info.course.number} ${SECTION_TYPE_TO_LABEL[event.info.section.type]}" has been ${declined ? "declined" : "accepted"}.`,
+        });
+      } else {
+        toast({
+          description: `Going to "${event.title}" has been ${declined ? "declined" : "accepted"}.`,
+        });
+      }
+    },
+    onSettled: async (data) => {
+      if (data) {
+        if (isCourseScheduleCalendarEvent(data.event)) {
+          await queryClient.invalidateQueries({
+            queryKey: ["schedule-course-events", schedule.id],
+          });
+        } else {
+          await queryClient.invalidateQueries({
+            queryKey: ["schedule-custom-events", schedule.id],
+          });
+        }
         return;
       }
-
-      toast({
-        description: `Going to "${event.info.department.code} ${event.info.course.number} ${SECTION_TYPE_TO_LABEL[event.info.section.type]}" has been ${declined ? "declined" : "accepted"}.`,
-      });
-    },
-    onSettled: async () => {
       await queryClient.invalidateQueries({
         queryKey: ["schedule-course-events", schedule.id],
-      })
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["schedule-custom-events", schedule.id],
+      });
     },
   })
 
@@ -146,7 +180,7 @@ export function EventInfoPopover({
   }, [events.data]);
 
   const footer = () => {
-    if (!isCourseEvent) {
+    if (!base.extendedProps.frequency) {
       return;
     }
 
@@ -161,7 +195,10 @@ export function EventInfoPopover({
             variant={declined ? "outline" : "default"}
             onClick={() => {
               if (declined) {
-                setDeclinedStatusMutation.mutate(false);
+                setDeclinedStatusMutation.mutate({
+                  event: event,
+                  declined: false,
+                });
               }
             }}
           >
@@ -172,7 +209,10 @@ export function EventInfoPopover({
             variant={!declined ? "outline" : "default"}
             onClick={() => {
               if (!declined) {
-                setDeclinedStatusMutation.mutate(true);
+                setDeclinedStatusMutation.mutate({
+                  event: event,
+                  declined: true,
+                });
               }
             }}
           >

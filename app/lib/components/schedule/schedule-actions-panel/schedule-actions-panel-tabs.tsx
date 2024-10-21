@@ -11,7 +11,7 @@ import {
 } from "./context";
 import { ScheduleActionsPanelSearchTab } from "./search-tab";
 import { ScheduleActionsPanelEventsTab } from "./events-tab";
-import { ScheduleActionsPanelMapTab } from "./map-tab";
+import { ScheduleActionsPanelPlannerTab } from "./planner-tab";
 
 export function ScheduleActionsPanelTabs() {
   const terms = useWebSocTermOptions();
@@ -35,7 +35,7 @@ export function ScheduleActionsPanelTabs() {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="search">Search</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
-            <TabsTrigger value="map">Map</TabsTrigger>
+            <TabsTrigger value="planner">Planner</TabsTrigger>
           </TabsList>
         </div>
         <TabsContent
@@ -54,7 +54,7 @@ export function ScheduleActionsPanelTabs() {
           value="map"
           className="h-[calc(100%-2.8rem)] w-full overflow-hidden p-2"
         >
-          <ScheduleActionsPanelMapTab />
+          <ScheduleActionsPanelPlannerTab />
         </TabsContent>
       </Tabs>
     </ScheduleActionsPanelContext.Provider>

@@ -67,7 +67,8 @@ export function EventPopover({
         e.target instanceof HTMLElement &&
         ((e.target.closest(".fc-event") &&
           (document.querySelector(".fc-event.new-event") ||
-            document.querySelector(".fc-event.editing"))) ||
+            document.querySelector(".fc-event.editing") ||
+            document.querySelector(".fc-event.selected"))) ||
           e.target.tagName === "HTML")
       ) {
         return false;

@@ -1,0 +1,1 @@
+export const MAJORS_MINORS_URL = "https://admissions.uci.edu/study/majors-minors.php";

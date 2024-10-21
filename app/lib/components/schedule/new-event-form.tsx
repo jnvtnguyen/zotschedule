@@ -80,6 +80,7 @@ const save = createServerFn("POST", async (payload: string) => {
         start: data.start,
         end: data.end,
         repeatability: data.repeatability as CustomScheduleEventRepeatability,
+        declined: [],
         recurrence: custom ? JSON.stringify(custom) : undefined,
       })
       .executeTakeFirstOrThrow();
@@ -272,13 +273,16 @@ export function NewEventForm({
       toast({
         description: "The event has been successfully saved.",
       });
-      onClose();
+      onClose(); 
     } catch (error) {
       toast({
         title: "Uh oh! Something went wrong.",
         description:
           "Something went wrong while saving the event. Please try again.",
         variant: "destructive",
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["schedule-custom-events", schedule.id],
       });
     }
   };
@@ -361,8 +365,8 @@ export function NewEventForm({
                         date.getFullYear(),
                         date.getMonth(),
                         date.getDate(),
-                        event.start!.getHours(),
-                        event.start!.getMinutes(),
+                        event.start.getHours(),
+                        event.start.getMinutes(),
                       );
                       const end = event.end
                         ? new Date(
@@ -403,39 +407,39 @@ export function NewEventForm({
                       onBlur={() => {
                         if (!field.value) {
                           form.setValue("times.start", {
-                            hour: event.start!.getHours(),
-                            minute: event.start!.getMinutes(),
+                            hour: event.start.getHours(),
+                            minute: event.start.getMinutes(),
                           });
                           return;
                         }
                         const end = event.end
                           ? new Date(
-                              event.start!.getFullYear(),
-                              event.start!.getMonth(),
-                              event.start!.getDate(),
+                              event.start.getFullYear(),
+                              event.start.getMonth(),
+                              event.start.getDate(),
                               event.end.getHours(),
                               event.end.getMinutes(),
                             )
-                          : event.start!;
+                          : event.start;
 
                         let added = add(
                           new Date(
-                            event.start!.getFullYear(),
-                            event.start!.getMonth(),
-                            event.start!.getDate(),
+                            event.start.getFullYear(),
+                            event.start.getMonth(),
+                            event.start.getDate(),
                             field.value.hour,
                             field.value.minute,
                           ),
                           intervalToDuration({
-                            start: event.start!,
+                            start: event.start,
                             end: end,
                           }),
                         );
                         onEventChange?.({
                           start: new Date(
-                            event.start!.getFullYear(),
-                            event.start!.getMonth(),
-                            event.start!.getDate(),
+                            event.start.getFullYear(),
+                            event.start.getMonth(),
+                            event.start.getDate(),
                             field.value.hour,
                             field.value.minute,
                           ),
@@ -472,8 +476,12 @@ export function NewEventForm({
                           field.value.hour,
                           field.value.minute,
                         );
-                        if (!field.value || end < event.start!) {
+                        if (!field.value || end < event.start) {
                           form.setValue("end", event.end!);
+                          form.setValue("times.end", {
+                            hour: event.end.getHours(),
+                            minute: event.end.getMinutes(),
+                          });
                           return;
                         }
                         onEventChange?.({
@@ -512,7 +520,11 @@ export function NewEventForm({
                               event.end.getHours(),
                               event.end.getMinutes(),
                             )
-                          : event.start!;
+                          : event.start;
+                        if (end < event.start) {
+                          form.setValue("end", event.end);
+                          return;
+                        }
                         field.onChange(end);
                         onEventChange?.({
                           end,

@@ -27,7 +27,6 @@ import { useSchedule } from "@/lib/hooks/use-schedule";
 import { ScheduleEvent } from "@/lib/database/types";
 import { DEFAULT_EVENT_COLOR } from "@/lib/uci/events/types";
 import {
-  COMMON_DAYS_TO_RRULE_DAYS,
   useCalendarEvents,
 } from "./use-calendar-events";
 import { NewEventPopover } from "./new-event-popover";
@@ -40,7 +39,7 @@ import { CustomScheduleEventRepeatability } from "@/lib/database/generated-types
 import { EventInfoPopover } from "./event-info-popover";
 
 type ScheduleCalendarProps = {
-  width: number;
+  width?: number;
 };
 
 export const NEW_EVENT = (start: Date, end: Date, scheduleId: string) => ({
@@ -199,6 +198,11 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
     if (event.id === "new" || editing?.id === event.id) {
       return;
     }
+    console.log(event.id, selected?.extendedProps.event.id);
+    if (event.id === selected?.extendedProps.event.id) {
+      reset();
+      return;
+    }
     reset(info.event);
   };
 
@@ -261,6 +265,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
                   : "",
                 event.event.extendedProps.event.id === "new" ? "new-event" : "",
                 event.event.extendedProps.declined ? "declined" : "",
+                event.event.extendedProps.event.id === selected?.extendedProps.event.id ? "selected" : "",
               ];
             }}
             eventResizeStart={() => setIsDragging(true)}
@@ -289,8 +294,7 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
                 return;
               }
               if (
-                event.id === selected?.extendedProps.event.id &&
-                (isNewEvent || editing)
+                event.id === selected?.extendedProps.event.id
               ) {
                 setSelected(info.event);
               }
@@ -363,7 +367,8 @@ function SlotLabelContent(props: SlotLabelContentArg) {
 function DayHeaderContent(props: DayHeaderContentArg) {
   return (
     <div className="flex flex-col items-center">
-      <p className="text-[0.8rem]">{format(props.date, "EEEE")}</p>
+      <p className="text-[0.8rem] hidden md:block">{format(props.date, "EEEE")}</p>
+      <p className="text-[0.8rem] md:hidden">{format(props.date, "iiiii")}</p>
       <p className="text-[0.8rem]">{format(props.date, "d")}</p>
     </div>
   );
@@ -436,5 +441,8 @@ function EventContent(props: EventContentArg) {
     );
   }
 
-  return <div className={classes.container}>{content.title}</div>;
+  return <div className={classes.container} style={{
+    color: declined ? event.color : "inherit",
+    textDecoration: declined ? "line-through" : "none",
+  }}>{content.title}</div>;
 }

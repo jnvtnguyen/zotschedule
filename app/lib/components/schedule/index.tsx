@@ -55,7 +55,8 @@ export function ScheduleView({ user }: ScheduleViewProps) {
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>
-        <div className="md:hidden"></div>
+        <div className="md:hidden w-full h-full">
+        </div>
       </div>
     </ScheduleCalendarContext.Provider>
   );
