@@ -16,7 +16,7 @@ import {
 import { useTermCalendars } from "@/lib/hooks/use-term-calendars";
 import { TERM_CODE_DICTIONARY } from "@/lib/uci/courses/types";
 import { WebSocMeeting } from "@/lib/uci/offerings/types";
-import { isCourseScheduleEvent } from "@/lib/uci/events/types";
+import { isCourseScheduleEvent } from "@/lib/types/event";
 import { useScheduleCalendar, View } from "@/lib/components/schedule/context";
 import { Frequency, RRule } from "rrule";
 

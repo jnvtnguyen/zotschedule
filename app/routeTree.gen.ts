@@ -10,185 +10,227 @@
 
 // Import Routes
 
-import { Route as rootRoute } from "./routes/__root";
-import { Route as AuthImport } from "./routes/auth";
-import { Route as IndexImport } from "./routes/index";
-import { Route as CoursesIndexImport } from "./routes/courses/index";
-import { Route as CoursesCourseIdImport } from "./routes/courses/$courseId";
-import { Route as CoursesCourseIdPrerequisitesImport } from "./routes/courses/$courseId.prerequisites";
-import { Route as CoursesCourseIdOfferingsImport } from "./routes/courses/$courseId.offerings";
+import { Route as rootRoute } from './routes/__root'
+import { Route as AuthImport } from './routes/auth'
+import { Route as IndexImport } from './routes/index'
+import { Route as PlannersIndexImport } from './routes/planners/index'
+import { Route as CoursesIndexImport } from './routes/courses/index'
+import { Route as PlannersPlannerIdImport } from './routes/planners/$plannerId'
+import { Route as CoursesCourseIdImport } from './routes/courses/$courseId'
+import { Route as CoursesCourseIdPrerequisitesImport } from './routes/courses/$courseId.prerequisites'
+import { Route as CoursesCourseIdOfferingsImport } from './routes/courses/$courseId.offerings'
 
 // Create/Update Routes
 
 const AuthRoute = AuthImport.update({
-  path: "/auth",
+  path: '/auth',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
 
 const IndexRoute = IndexImport.update({
-  path: "/",
+  path: '/',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
+
+const PlannersIndexRoute = PlannersIndexImport.update({
+  path: '/planners/',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const CoursesIndexRoute = CoursesIndexImport.update({
-  path: "/courses/",
+  path: '/courses/',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
+
+const PlannersPlannerIdRoute = PlannersPlannerIdImport.update({
+  path: '/planners/$plannerId',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const CoursesCourseIdRoute = CoursesCourseIdImport.update({
-  path: "/courses/$courseId",
+  path: '/courses/$courseId',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
 
 const CoursesCourseIdPrerequisitesRoute =
   CoursesCourseIdPrerequisitesImport.update({
-    path: "/prerequisites",
+    path: '/prerequisites',
     getParentRoute: () => CoursesCourseIdRoute,
-  } as any);
+  } as any)
 
 const CoursesCourseIdOfferingsRoute = CoursesCourseIdOfferingsImport.update({
-  path: "/offerings",
+  path: '/offerings',
   getParentRoute: () => CoursesCourseIdRoute,
-} as any);
+} as any)
 
 // Populate the FileRoutesByPath interface
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexImport;
-      parentRoute: typeof rootRoute;
-    };
-    "/auth": {
-      id: "/auth";
-      path: "/auth";
-      fullPath: "/auth";
-      preLoaderRoute: typeof AuthImport;
-      parentRoute: typeof rootRoute;
-    };
-    "/courses/$courseId": {
-      id: "/courses/$courseId";
-      path: "/courses/$courseId";
-      fullPath: "/courses/$courseId";
-      preLoaderRoute: typeof CoursesCourseIdImport;
-      parentRoute: typeof rootRoute;
-    };
-    "/courses/": {
-      id: "/courses/";
-      path: "/courses";
-      fullPath: "/courses";
-      preLoaderRoute: typeof CoursesIndexImport;
-      parentRoute: typeof rootRoute;
-    };
-    "/courses/$courseId/offerings": {
-      id: "/courses/$courseId/offerings";
-      path: "/offerings";
-      fullPath: "/courses/$courseId/offerings";
-      preLoaderRoute: typeof CoursesCourseIdOfferingsImport;
-      parentRoute: typeof CoursesCourseIdImport;
-    };
-    "/courses/$courseId/prerequisites": {
-      id: "/courses/$courseId/prerequisites";
-      path: "/prerequisites";
-      fullPath: "/courses/$courseId/prerequisites";
-      preLoaderRoute: typeof CoursesCourseIdPrerequisitesImport;
-      parentRoute: typeof CoursesCourseIdImport;
-    };
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthImport
+      parentRoute: typeof rootRoute
+    }
+    '/courses/$courseId': {
+      id: '/courses/$courseId'
+      path: '/courses/$courseId'
+      fullPath: '/courses/$courseId'
+      preLoaderRoute: typeof CoursesCourseIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/planners/$plannerId': {
+      id: '/planners/$plannerId'
+      path: '/planners/$plannerId'
+      fullPath: '/planners/$plannerId'
+      preLoaderRoute: typeof PlannersPlannerIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/courses/': {
+      id: '/courses/'
+      path: '/courses'
+      fullPath: '/courses'
+      preLoaderRoute: typeof CoursesIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/planners/': {
+      id: '/planners/'
+      path: '/planners'
+      fullPath: '/planners'
+      preLoaderRoute: typeof PlannersIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/courses/$courseId/offerings': {
+      id: '/courses/$courseId/offerings'
+      path: '/offerings'
+      fullPath: '/courses/$courseId/offerings'
+      preLoaderRoute: typeof CoursesCourseIdOfferingsImport
+      parentRoute: typeof CoursesCourseIdImport
+    }
+    '/courses/$courseId/prerequisites': {
+      id: '/courses/$courseId/prerequisites'
+      path: '/prerequisites'
+      fullPath: '/courses/$courseId/prerequisites'
+      preLoaderRoute: typeof CoursesCourseIdPrerequisitesImport
+      parentRoute: typeof CoursesCourseIdImport
+    }
   }
 }
 
 // Create and export the route tree
 
 interface CoursesCourseIdRouteChildren {
-  CoursesCourseIdOfferingsRoute: typeof CoursesCourseIdOfferingsRoute;
-  CoursesCourseIdPrerequisitesRoute: typeof CoursesCourseIdPrerequisitesRoute;
+  CoursesCourseIdOfferingsRoute: typeof CoursesCourseIdOfferingsRoute
+  CoursesCourseIdPrerequisitesRoute: typeof CoursesCourseIdPrerequisitesRoute
 }
 
 const CoursesCourseIdRouteChildren: CoursesCourseIdRouteChildren = {
   CoursesCourseIdOfferingsRoute: CoursesCourseIdOfferingsRoute,
   CoursesCourseIdPrerequisitesRoute: CoursesCourseIdPrerequisitesRoute,
-};
+}
 
 const CoursesCourseIdRouteWithChildren = CoursesCourseIdRoute._addFileChildren(
   CoursesCourseIdRouteChildren,
-);
+)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/auth": typeof AuthRoute;
-  "/courses/$courseId": typeof CoursesCourseIdRouteWithChildren;
-  "/courses": typeof CoursesIndexRoute;
-  "/courses/$courseId/offerings": typeof CoursesCourseIdOfferingsRoute;
-  "/courses/$courseId/prerequisites": typeof CoursesCourseIdPrerequisitesRoute;
+  '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
+  '/planners/$plannerId': typeof PlannersPlannerIdRoute
+  '/courses': typeof CoursesIndexRoute
+  '/planners': typeof PlannersIndexRoute
+  '/courses/$courseId/offerings': typeof CoursesCourseIdOfferingsRoute
+  '/courses/$courseId/prerequisites': typeof CoursesCourseIdPrerequisitesRoute
 }
 
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/auth": typeof AuthRoute;
-  "/courses/$courseId": typeof CoursesCourseIdRouteWithChildren;
-  "/courses": typeof CoursesIndexRoute;
-  "/courses/$courseId/offerings": typeof CoursesCourseIdOfferingsRoute;
-  "/courses/$courseId/prerequisites": typeof CoursesCourseIdPrerequisitesRoute;
+  '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
+  '/planners/$plannerId': typeof PlannersPlannerIdRoute
+  '/courses': typeof CoursesIndexRoute
+  '/planners': typeof PlannersIndexRoute
+  '/courses/$courseId/offerings': typeof CoursesCourseIdOfferingsRoute
+  '/courses/$courseId/prerequisites': typeof CoursesCourseIdPrerequisitesRoute
 }
 
 export interface FileRoutesById {
-  __root__: typeof rootRoute;
-  "/": typeof IndexRoute;
-  "/auth": typeof AuthRoute;
-  "/courses/$courseId": typeof CoursesCourseIdRouteWithChildren;
-  "/courses/": typeof CoursesIndexRoute;
-  "/courses/$courseId/offerings": typeof CoursesCourseIdOfferingsRoute;
-  "/courses/$courseId/prerequisites": typeof CoursesCourseIdPrerequisitesRoute;
+  __root__: typeof rootRoute
+  '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
+  '/planners/$plannerId': typeof PlannersPlannerIdRoute
+  '/courses/': typeof CoursesIndexRoute
+  '/planners/': typeof PlannersIndexRoute
+  '/courses/$courseId/offerings': typeof CoursesCourseIdOfferingsRoute
+  '/courses/$courseId/prerequisites': typeof CoursesCourseIdPrerequisitesRoute
 }
 
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | "/"
-    | "/auth"
-    | "/courses/$courseId"
-    | "/courses"
-    | "/courses/$courseId/offerings"
-    | "/courses/$courseId/prerequisites";
-  fileRoutesByTo: FileRoutesByTo;
+    | '/'
+    | '/auth'
+    | '/courses/$courseId'
+    | '/planners/$plannerId'
+    | '/courses'
+    | '/planners'
+    | '/courses/$courseId/offerings'
+    | '/courses/$courseId/prerequisites'
+  fileRoutesByTo: FileRoutesByTo
   to:
-    | "/"
-    | "/auth"
-    | "/courses/$courseId"
-    | "/courses"
-    | "/courses/$courseId/offerings"
-    | "/courses/$courseId/prerequisites";
+    | '/'
+    | '/auth'
+    | '/courses/$courseId'
+    | '/planners/$plannerId'
+    | '/courses'
+    | '/planners'
+    | '/courses/$courseId/offerings'
+    | '/courses/$courseId/prerequisites'
   id:
-    | "__root__"
-    | "/"
-    | "/auth"
-    | "/courses/$courseId"
-    | "/courses/"
-    | "/courses/$courseId/offerings"
-    | "/courses/$courseId/prerequisites";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/courses/$courseId'
+    | '/planners/$plannerId'
+    | '/courses/'
+    | '/planners/'
+    | '/courses/$courseId/offerings'
+    | '/courses/$courseId/prerequisites'
+  fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  AuthRoute: typeof AuthRoute;
-  CoursesCourseIdRoute: typeof CoursesCourseIdRouteWithChildren;
-  CoursesIndexRoute: typeof CoursesIndexRoute;
+  IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
+  CoursesCourseIdRoute: typeof CoursesCourseIdRouteWithChildren
+  PlannersPlannerIdRoute: typeof PlannersPlannerIdRoute
+  CoursesIndexRoute: typeof CoursesIndexRoute
+  PlannersIndexRoute: typeof PlannersIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   CoursesCourseIdRoute: CoursesCourseIdRouteWithChildren,
+  PlannersPlannerIdRoute: PlannersPlannerIdRoute,
   CoursesIndexRoute: CoursesIndexRoute,
-};
+  PlannersIndexRoute: PlannersIndexRoute,
+}
 
 export const routeTree = rootRoute
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
 /* prettier-ignore-end */
 
@@ -201,7 +243,9 @@ export const routeTree = rootRoute
         "/",
         "/auth",
         "/courses/$courseId",
-        "/courses/"
+        "/planners/$plannerId",
+        "/courses/",
+        "/planners/"
       ]
     },
     "/": {
@@ -217,8 +261,14 @@ export const routeTree = rootRoute
         "/courses/$courseId/prerequisites"
       ]
     },
+    "/planners/$plannerId": {
+      "filePath": "planners/$plannerId.tsx"
+    },
     "/courses/": {
       "filePath": "courses/index.tsx"
+    },
+    "/planners/": {
+      "filePath": "planners/index.tsx"
     },
     "/courses/$courseId/offerings": {
       "filePath": "courses/$courseId.offerings.tsx",

@@ -10,7 +10,7 @@ import {
   WebSocDepartment,
   WebSocSection,
 } from "@/lib/uci/offerings/types";
-import { isCourseScheduleEvent } from "@/lib/uci/events/types";
+import { isCourseScheduleEvent } from "@/lib/types/event";
 
 export type CourseScheduleCalendarEvent = {
   info: {

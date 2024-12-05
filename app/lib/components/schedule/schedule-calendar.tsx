@@ -25,7 +25,7 @@ import { Controller, animated } from "@react-spring/web";
 import { useScheduleCalendar } from "@/lib/components/schedule/context";
 import { useSchedule } from "@/lib/hooks/use-schedule";
 import { ScheduleEvent } from "@/lib/database/types";
-import { DEFAULT_EVENT_COLOR } from "@/lib/uci/events/types";
+import { DEFAULT_EVENT_COLOR } from "@/lib/types/event";
 import {
   useCalendarEvents,
 } from "./use-calendar-events";
@@ -198,8 +198,10 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
     if (event.id === "new" || editing?.id === event.id) {
       return;
     }
-    console.log(event.id, selected?.extendedProps.event.id);
-    if (event.id === selected?.extendedProps.event.id) {
+    if (
+      event.id === selected?.extendedProps.event.id &&
+      selected?.extendedProps.occurence === info.event.extendedProps.occurence
+    ) {
       reset();
       return;
     }
@@ -265,7 +267,9 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
                   : "",
                 event.event.extendedProps.event.id === "new" ? "new-event" : "",
                 event.event.extendedProps.declined ? "declined" : "",
-                event.event.extendedProps.event.id === selected?.extendedProps.event.id ? "selected" : "",
+                (event.event.extendedProps.id === selected?.extendedProps.id &&
+                  event.event.extendedProps.occurence ===
+                    selected?.extendedProps.occurence) ? "selected" : "",
               ];
             }}
             eventResizeStart={() => setIsDragging(true)}
@@ -294,8 +298,10 @@ export function ScheduleCalendar({ width }: ScheduleCalendarProps) {
                 return;
               }
               if (
-                event.id === selected?.extendedProps.event.id
+                event.id === selected?.extendedProps.event.id &&
+                info.event.extendedProps.occurence === selected?.extendedProps.occurence
               ) {
+                console.log(info.event)
                 setSelected(info.event);
               }
             }}

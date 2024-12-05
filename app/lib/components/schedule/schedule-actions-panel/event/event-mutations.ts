@@ -4,7 +4,7 @@ import superjson from "superjson";
 
 import { database } from "@/lib/database";
 import { NewScheduleEvent, ScheduleEvent } from "@/lib/database/types";
-import { isCourseScheduleEvent } from "@/lib/uci/events/types";
+import { isCourseScheduleEvent } from "@/lib/types/event";
 import { useToast } from "@/lib/hooks/use-toast";
 
 const add = createServerFn(

@@ -14,6 +14,7 @@ import {
 } from "@/lib/components/schedule/context";
 import { useSchedule } from "@/lib/hooks/use-schedule";
 import { User } from "@/lib/database/types";
+import { CreateScheduleDialog } from "./create-schedule-dialog";
 
 type ScheduleViewProps = {
   user: User;
@@ -26,7 +27,7 @@ export function ScheduleView({ user }: ScheduleViewProps) {
   const [width, setWidth] = useState(0);
 
   if (!schedule) {
-    return <></>;
+    return <CreateScheduleDialog isOpen={true} isCloseable={false} />;
   }
 
   return (

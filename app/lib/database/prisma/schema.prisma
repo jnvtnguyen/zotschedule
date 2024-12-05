@@ -45,6 +45,22 @@ model Course {
   @@map("courses")
 }
 
+model Major {
+  name       String @id
+  /// @kyselyType(ColumnType<Array<import('@/lib/uci/requirements/types').Requirement>, string, string>)
+  requirements Json
+
+  @@map("majors")
+}
+
+model Minor {
+  name       String @id
+  /// @kyselyType(ColumnType<Array<import('@/lib/uci/requirements/types').Requirement>,  string, string>)
+  requirements Json
+
+  @@map("minors")
+}
+
 model TermCalendar {
   term                          String   @id
   schedule_of_classes_available DateTime
@@ -64,6 +80,7 @@ model User {
   picture    String
   sessions   UserSession[]
   schedules  Schedule[]
+  planners   Planner[]
 
   @@map("users")
 }
@@ -76,6 +93,18 @@ model UserSession {
   expires_at DateTime
 
   @@map("user_sessions")
+}
+
+model Planner {
+  id         String  @id @default(dbgenerated("gen_random_uuid()"))
+  name       String
+  /// @kyselyType(ColumnType<(import('@/lib/types/planner').PlannerYear)[], string, string>)
+  years      Json
+
+  user_id    String
+  user       User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("planners")
 }
 
 model Schedule {
@@ -129,7 +158,7 @@ model CustomScheduleEvent {
   color String
   repeatability CustomScheduleEventRepeatability
   declined DateTime[] @db.Timestamptz()
-  /// @kyselyType(ColumnType<import('@/lib/uci/events/types').Recurrence, string, string>)
+  /// @kyselyType(ColumnType<import('@/lib/types/event').Recurrence, string, string>)
   recurrence Json?
 
   @@map("custom_schedule_events")

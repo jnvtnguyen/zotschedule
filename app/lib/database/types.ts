@@ -10,6 +10,9 @@ import {
   SearchAlias as DatabaseSearchAlias,
   TermCalendar as DatabaseTermCalendar,
   UserSession as DatabaseUserSession,
+  Major as DatabaseMajor,
+  Minor as DatabaseMinor,
+  Planner as DatabasePlanner
 } from "./generated-types";
 
 export type NewDepartment = Insertable<DatabaseDepartment>;
@@ -29,3 +32,8 @@ export type ScheduleEvent = CourseScheduleEvent | CustomScheduleEvent;
 export type SearchAlias = Selectable<DatabaseSearchAlias>;
 export type TermCalendar = Selectable<DatabaseTermCalendar>;
 export type UserSession = Selectable<DatabaseUserSession>;
+export type Major = Selectable<DatabaseMajor>;
+export type Minor = Selectable<DatabaseMinor>;
+export type NewMajor = Insertable<DatabaseMajor>;
+export type NewMinor = Insertable<DatabaseMinor>;
+export type Planner = Selectable<DatabasePlanner>;

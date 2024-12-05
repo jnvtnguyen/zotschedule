@@ -1,1 +1,6 @@
-export const MAJORS_MINORS_URL = "https://admissions.uci.edu/study/majors-minors.php";
+export const DEGREES_URL = "https://catalogue.uci.edu/undergraduatedegrees/";
+
+export type Requirement = {
+  name: string;
+  children: (Requirement | string)[];
+}; 

@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Spinner } from "@phosphor-icons/react";
 
-import { Schedule } from "@/lib/database/types";
+import { Planner } from "@/lib/database/types";
 import { database } from "@/lib/database";
 import {
   Form,
@@ -21,27 +21,27 @@ import { setErrors } from "@/lib/utils/form";
 import { useToast } from "@/lib/hooks/use-toast";
 import { useAuthUser } from "@/lib/hooks/use-auth-user";
 
-type CreateScheduleFormProps = {
-  onScheduleCreate: (schedule: Schedule) => void;
-  onCancel?: () => void;
+type CreatePlannerFormProps = {
+  onPlannerCreate: (planner: Planner) => void;
+  onCancel: () => void;
 };
 
-const createScheduleFormSchema = z.object({
+const createPlannerFormSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }).trim(),
 });
 
-const createSchedule = createServerFn(
+const createPlanner = createServerFn(
   "POST",
   async ({
     data,
     userId,
   }: {
-    data: z.infer<typeof createScheduleFormSchema>;
+    data: z.infer<typeof createPlannerFormSchema>;
     userId: string;
   }) => {
     const { name } = data;
     const isDuplicateName = await database
-      .selectFrom("schedules")
+      .selectFrom("planners")
       .where("name", "=", name)
       .where("userId", "=", userId)
       .executeTakeFirst();
@@ -52,19 +52,12 @@ const createSchedule = createServerFn(
         },
       };
     }
-    await database
-      .updateTable("schedules")
-      .where("userId", "=", userId)
-      .set({ isDefault: false })
-      .execute();
     const schedule = await database
-      .insertInto("schedules")
+      .insertInto("planners")
       .values({
         name,
         userId,
-        isDefault: true,
-        showWeekends: true,
-        view: "timeGridWeek",
+        years: JSON.stringify([])
       })
       .returningAll()
       .executeTakeFirstOrThrow();
@@ -74,24 +67,24 @@ const createSchedule = createServerFn(
   },
 );
 
-export function CreateScheduleForm({
-  onScheduleCreate,
+export function CreatePlannerForm({
+  onPlannerCreate,
   onCancel,
-}: CreateScheduleFormProps) {
+}: CreatePlannerFormProps) {
   const queryClient = useQueryClient();
   const user = useAuthUser((state) => state.user);
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof createScheduleFormSchema>>({
-    resolver: zodResolver(createScheduleFormSchema),
+  const form = useForm<z.infer<typeof createPlannerFormSchema>>({
+    resolver: zodResolver(createPlannerFormSchema),
     defaultValues: {
       name: "",
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof createScheduleFormSchema>) => {
+  const onSubmit = async (data: z.infer<typeof createPlannerFormSchema>) => {
     try {
-      const result = await createSchedule({
+      const result = await createPlanner({
         data,
         userId: user.id,
       });
@@ -100,17 +93,17 @@ export function CreateScheduleForm({
         return;
       }
       await queryClient.invalidateQueries({
-        queryKey: ["schedules", user.id],
+        queryKey: ["planners", user.id],
       });
-      onScheduleCreate(result.schedule);
+      onPlannerCreate(result.schedule);
       toast({
-        description: "Your schedule has been created successfully.",
+        description: "Your planner has been created successfully.",
       });
     } catch (error) {
       toast({
         title: "Uh oh! Something went wrong.",
         description:
-          "Something went wrong while creating your schedule. Please try again.",
+          "Something went wrong while creating your planner. Please try again.",
         variant: "destructive",
       });
     }
@@ -131,7 +124,7 @@ export function CreateScheduleForm({
               <FormLabel>Name</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Enter the name of the schedule"
+                  placeholder="Enter the name of the planner"
                   {...field}
                 />
               </FormControl>

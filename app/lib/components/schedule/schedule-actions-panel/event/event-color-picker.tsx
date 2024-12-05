@@ -17,7 +17,7 @@ import { useToast } from "@/lib/hooks/use-toast";
 import {
   isCourseScheduleEvent,
   PRESET_EVENT_COLORS,
-} from "@/lib/uci/events/types";
+} from "@/lib/types/event";
 
 const updateEventColor = createServerFn(
   "POST",

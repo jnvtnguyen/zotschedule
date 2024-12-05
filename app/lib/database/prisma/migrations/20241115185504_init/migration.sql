@@ -33,6 +33,22 @@ CREATE TABLE "courses" (
 );
 
 -- CreateTable
+CREATE TABLE "majors" (
+    "name" TEXT NOT NULL,
+    "requirements" JSONB NOT NULL,
+
+    CONSTRAINT "majors_pkey" PRIMARY KEY ("name")
+);
+
+-- CreateTable
+CREATE TABLE "minors" (
+    "name" TEXT NOT NULL,
+    "requirements" JSONB NOT NULL,
+
+    CONSTRAINT "minors_pkey" PRIMARY KEY ("name")
+);
+
+-- CreateTable
 CREATE TABLE "term_calendars" (
     "term" TEXT NOT NULL,
     "schedule_of_classes_available" TIMESTAMP(3) NOT NULL,
@@ -62,6 +78,16 @@ CREATE TABLE "user_sessions" (
     "expires_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "user_sessions_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "planners" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "name" TEXT NOT NULL,
+    "years" JSONB NOT NULL,
+    "user_id" TEXT NOT NULL,
+
+    CONSTRAINT "planners_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -124,6 +150,9 @@ ALTER TABLE "courses" ADD CONSTRAINT "courses_department_code_fkey" FOREIGN KEY 
 
 -- AddForeignKey
 ALTER TABLE "user_sessions" ADD CONSTRAINT "user_sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "planners" ADD CONSTRAINT "planners_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "schedules" ADD CONSTRAINT "schedules_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

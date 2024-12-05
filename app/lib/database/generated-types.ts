@@ -57,13 +57,36 @@ export type CustomScheduleEvent = {
     repeatability: CustomScheduleEventRepeatability;
     declined: Timestamp[];
     /**
-     * @kyselyType(ColumnType<import('@/lib/uci/events/types').Recurrence, string, string>)
+     * @kyselyType(ColumnType<import('@/lib/types/event').Recurrence, string, string>)
      */
-    recurrence: ColumnType<import('@/lib/uci/events/types').Recurrence, string, string> | null;
+    recurrence: ColumnType<import('@/lib/types/event').Recurrence, string, string> | null;
 };
 export type Department = {
     code: string;
     title: string;
+};
+export type Major = {
+    name: string;
+    /**
+     * @kyselyType(ColumnType<Array<import('@/lib/uci/requirements/types').Requirement>, string, string>)
+     */
+    requirements: ColumnType<Array<import('@/lib/uci/requirements/types').Requirement>, string, string>;
+};
+export type Minor = {
+    name: string;
+    /**
+     * @kyselyType(ColumnType<Array<import('@/lib/uci/requirements/types').Requirement>,  string, string>)
+     */
+    requirements: ColumnType<Array<import('@/lib/uci/requirements/types').Requirement>,  string, string>;
+};
+export type Planner = {
+    id: Generated<string>;
+    name: string;
+    /**
+     * @kyselyType(ColumnType<(import('@/lib/types/planner').PlannerYear)[], string, string>)
+     */
+    years: ColumnType<(import('@/lib/types/planner').PlannerYear)[], string, string>;
+    userId: string;
 };
 export type Schedule = {
     id: Generated<string>;
@@ -106,6 +129,9 @@ export type DB = {
     courses: Course;
     customScheduleEvents: CustomScheduleEvent;
     departments: Department;
+    majors: Major;
+    minors: Minor;
+    planners: Planner;
     schedules: Schedule;
     searchAliases: SearchAlias;
     termCalendars: TermCalendar;

@@ -7,7 +7,7 @@ import { DotFilledIcon } from "@radix-ui/react-icons";
 import { Frequency } from "rrule";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { FREQUENCY_TO_LABEL } from "@/lib/uci/events/types";
+import { FREQUENCY_TO_LABEL } from "@/lib/types/event";
 import {
   isCourseScheduleCalendarEvent,
   ScheduleCalendarEvent,
@@ -177,7 +177,7 @@ export function EventInfoPopover({
     setAnchor(
       document.querySelector(selector)?.parentElement as HTMLDivElement,
     );
-  }, [events.data]);
+  }, [events.data, base]);
 
   const footer = () => {
     if (!base.extendedProps.frequency) {

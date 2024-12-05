@@ -35,7 +35,7 @@ import {
 } from "@/lib/components/ui/select";
 import { DatePicker } from "@/lib/components/common/date-picker";
 import { CustomScheduleCalendarEvent } from "@/lib/hooks/use-schedule-calendar-events";
-import { FREQUENCY_TO_LABEL } from "@/lib/uci/events/types";
+import { FREQUENCY_TO_LABEL } from "@/lib/types/event";
 import { CustomScheduleEventRepeatability } from "@/lib/database/generated-types";
 import { CustomRecurrenceDialog } from "./custom-recurrence-dialog";
 import { CustomRecurrence } from "./custom-recurrence-form";

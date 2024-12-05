@@ -50,17 +50,13 @@ function Schedule() {
 
   return (
     <AuthUserContext.Provider value={createAuthUserStore(session.user)}>
-      {schedules.length === 0 ? (
-        <CreateScheduleDialog isOpen={true} isCloseable={false} />
-      ) : (
-        <ScheduleContext.Provider
-          value={createScheduleStore(
-            schedules.find((schedule) => schedule.isDefault),
-          )}
-        >
-          <ScheduleView user={session.user} />
-        </ScheduleContext.Provider>
-      )}
+      <ScheduleContext.Provider
+        value={createScheduleStore(
+          schedules.find((schedule) => schedule.isDefault),
+        )}
+      >
+        <ScheduleView user={session.user} />
+      </ScheduleContext.Provider>
     </AuthUserContext.Provider>
   );
 }

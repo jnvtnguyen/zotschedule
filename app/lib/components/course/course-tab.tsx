@@ -24,7 +24,7 @@ export function CourseTab({ title, to, icon }: CourseTabProps) {
           "flex-col gap-2 md:flex-row md:gap-0",
         )}
       >
-        {icon && <span className="me-2">{icon}</span>}
+        {icon && <span className="md:me-2 me-0">{icon}</span>}
         {title}
       </Link>
     </li>
